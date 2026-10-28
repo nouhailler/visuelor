@@ -43,6 +43,10 @@ const VIEWER = [
   ,'    else{inner.style.cssText=s;} w.appendChild(inner);} '
   ,'  else if(el.type==="image"&&el.src){var img=new Image();img.src=el.src;img.style.cssText="width:100%;height:100%;object-fit:"+(el.fit||"cover")+";";w.appendChild(img);}'
   ,'  else if(el.type==="embed"&&el.url&&/youtube|vimeo/.test(el.url)){var f=document.createElement("iframe");f.src=embed(el.url);f.style.cssText="width:100%;height:100%;border:0;border-radius:8px";f.allow="autoplay;encrypted-media;fullscreen";f.allowFullscreen=true;w.appendChild(f);}'
+  ,'  else if(el.type==="quiz"){buildQuiz(w,el);}'
+  ,'  else if(el.type==="audio"){w.style.cssText+="display:flex;flex-direction:column;gap:6px;justify-content:center;background:rgba(127,127,160,0.10);border:1px solid rgba(127,127,160,0.35);border-radius:12px;padding:8px 12px;box-sizing:border-box;overflow:hidden;";'
+  ,'    var tl=document.createElement("div");tl.style.cssText="font-size:13px;color:#8a8aa8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";tl.textContent="\\ud83d\\udd08 "+(el.title||"Piste audio");w.appendChild(tl);'
+  ,'    var au=document.createElement("audio");au.controls=true;au.src=el.src||"";au.style.cssText="width:100%;height:34px";w.appendChild(au);}'
   ,'  if(hasPop){'
   ,'    if(el.popup.trigger==="hover"){w.addEventListener("mouseenter",function(ev){showPop(w,el)});w.addEventListener("mouseleave",closePop);}'
   ,'    else{w.addEventListener("click",function(ev){ev.stopPropagation();if(popupEl){closePop();}else{showPop(w,el)}});}'
@@ -50,6 +54,31 @@ const VIEWER = [
   ,'  if(el.link&&el.link.type!=="none"){w.addEventListener("click",function(ev){ev.stopPropagation();if(el.link.type==="url"){window.open(el.link.url,"_blank","noopener")}else if(el.link.type==="slide"){var t=findSlide(el.link.slideId);if(t>=0)render(t)}});}'
   ,'  return w;}',
   'function findSlide(id){for(var i=0;i<slides.length;i++)if(slides[i].id===id)return i;return -1}',
+  'function buildQuiz(w,el){',
+  '  w.style.cssText+="display:flex;flex-direction:column;gap:8px;background:rgba(127,127,160,0.10);border:1px solid rgba(127,127,160,0.35);border-radius:14px;padding:16px;box-sizing:border-box;overflow:hidden;";',
+  '  var q=document.createElement("div");q.style.cssText="font-weight:700;font-size:20px;line-height:1.3";q.textContent=el.question||"";w.appendChild(q);',
+  '  var list=document.createElement("div");list.style.cssText="display:flex;flex-direction:column;gap:7px;flex:1;min-height:0";w.appendChild(list);',
+  '  var foot=document.createElement("div");foot.style.cssText="display:flex;align-items:center;gap:10px;min-height:22px;font-size:14px";w.appendChild(foot);',
+  '  var fb=document.createElement("span");foot.appendChild(fb);',
+  '  var retry=document.createElement("button");retry.textContent="\\u21ba Recommencer";',
+  '  retry.style.cssText="width:auto;margin:0;padding:3px 10px;font-size:12.5px;background:rgba(127,127,160,0.18);border-radius:8px;cursor:pointer;color:inherit;border:0;display:none;font-family:inherit";',
+  '  foot.appendChild(retry);',
+  '  var answered=false,btns=[];',
+  '  (el.choices||[]).forEach(function(c,i){',
+  '    var b=document.createElement("button");b.textContent=c;',
+  '    b.style.cssText="text-align:left;padding:9px 12px;border-radius:10px;border:1px solid rgba(127,127,160,0.45);background:rgba(127,127,160,0.08);color:inherit;font-size:15px;cursor:pointer;margin:0;box-sizing:border-box;font-family:inherit";',
+  '    b.onclick=function(ev){ev.stopPropagation();if(answered)return;answered=true;',
+  '      if(i===(el.correct||0)){b.style.borderColor="#4fc98a";b.style.background="rgba(79,201,138,0.18)";b.textContent="\\u2713 "+c;fb.style.color="#4fc98a";fb.textContent=el.ok||"\\u2713 Exact !"}',
+  '      else{b.style.borderColor="#e5646c";b.style.background="rgba(229,100,108,0.15)";b.textContent="\\u2717 "+c;',
+  '        var g=btns[el.correct||0];if(g){g.style.borderColor="#4fc98a";g.style.background="rgba(79,201,138,0.18)";g.textContent="\\u2713 "+(el.choices||[])[el.correct||0]}',
+  '        fb.style.color="#e5646c";fb.textContent=el.ko||"\\u2717 Rat\\u00e9 \\u2014 la bonne r\\u00e9ponse est surlign\\u00e9e."}',
+  '      retry.style.display="inline-block"};',
+  '    btns.push(b);list.appendChild(b);',
+  '  });',
+  '  retry.onclick=function(ev){ev.stopPropagation();',
+  '    answered=false;fb.textContent="";fb.style.color="";retry.style.display="none";',
+  '    btns.forEach(function(b,j){b.style.borderColor="rgba(127,127,160,0.45)";b.style.background="rgba(127,127,160,0.08)";b.textContent=(el.choices||[])[j]})};',
+  '}',
   'function lineStyle(el){return "display:flex"}',
   'function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}',
   'function embed(u){var y=u.match(/(?:youtube\\.com\\/(?:watch\\?v=|embed\\/|shorts\\/)|youtu\\.be\\/)([\\w-]{11})/);if(y)return"https://www.youtube.com/embed/"+y[1];var v=u.match(/vimeo\\.com\\/(?:video\\/)?(\\d+)/);if(v)return"https://player.vimeo.com/video/"+v[1];return u}',

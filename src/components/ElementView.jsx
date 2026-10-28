@@ -93,6 +93,19 @@ export function ElementView({ el, interactive, editingText, onTextCommit, onNavi
         </div>
       )
       break
+    case 'quiz':
+      inner = <QuizView el={el} interactive={interactive} />
+      break
+    case 'audio':
+      inner = interactive && el.src ? (
+        <div className="inner" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center', background: 'rgba(127,127,160,0.10)', border: '1px solid rgba(127,127,160,0.35)', borderRadius: 12, padding: '8px 12px', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <div style={{ fontSize: 13, color: '#8a8aa8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>🔊 {el.title || 'Piste audio'}</div>
+          <audio controls src={el.src} style={{ width: '100%', height: 34 }} />
+        </div>
+      ) : (
+        <div className="ph">🔊 {el.title || 'Piste audio — importez un fichier dans le panneau de droite'}</div>
+      )
+      break
     default:
       inner = null
   }
@@ -129,6 +142,69 @@ function Badges({ el }) {
     has.push(<span key="l">🔗 {el.link.type === 'url' ? 'URL' : 'diapo'}</span>)
   if (!has.length) return null
   return <div className="el-badge">{has}</div>
+}
+
+// ── Quiz interactif (mode lecture) ────────────────────────────────────────────
+function QuizView({ el, interactive }) {
+  const [picked, setPicked] = useState(null)
+  useEffect(() => setPicked(null), [el.id])
+  const choices = Array.isArray(el.choices) ? el.choices : []
+  const answered = picked !== null
+
+  const answer = (i, e) => {
+    e.stopPropagation()
+    if (answered) return
+    setPicked(i)
+  }
+
+  const boxStyle = {
+    width: '100%', height: '100%',
+    display: 'flex', flexDirection: 'column', gap: 8,
+    background: 'rgba(127,127,160,0.10)',
+    border: '1px solid rgba(127,127,160,0.35)',
+    borderRadius: 14, padding: 16, boxSizing: 'border-box', overflow: 'hidden',
+    pointerEvents: interactive ? 'auto' : 'none',
+  }
+
+  return (
+    <div className="inner" style={boxStyle}>
+      <div style={{ fontWeight: 700, fontSize: 20, lineHeight: 1.3, color: 'inherit' }}>{el.question}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1, minHeight: 0 }}>
+        {choices.map((c, i) => {
+          const isCorrect = i === el.correct
+          const chosen = picked === i
+          const style = {
+            textAlign: 'left', padding: '9px 12px', borderRadius: 10,
+            border: '1px solid rgba(127,127,160,0.45)', background: 'rgba(127,127,160,0.08)',
+            color: 'inherit', fontSize: 15, cursor: interactive && !answered ? 'pointer' : 'default',
+            margin: 0,
+          }
+          if (answered && isCorrect) { style.borderColor = '#4fc98a'; style.background = 'rgba(79,201,138,0.18)' }
+          if (answered && chosen && !isCorrect) { style.borderColor = '#e5646c'; style.background = 'rgba(229,100,108,0.15)' }
+          return (
+            <button key={i} style={style} onClick={(e) => answer(i, e)} title={interactive && !answered ? 'Choisir cette réponse' : undefined}>
+              {answered && (isCorrect ? '✓ ' : chosen ? '✗ ' : '')}{c}
+            </button>
+          )
+        })}
+      </div>
+      <div style={{ fontSize: 14, minHeight: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+        {answered && (
+          <>
+            <span style={{ color: picked === el.correct ? '#4fc98a' : '#e5646c' }}>
+              {picked === el.correct ? (el.ok || '✓ Exact !') : (el.ko || '✗ Raté — la bonne réponse est surlignée.')}
+            </span>
+            <button
+              style={{ width: 'auto', margin: 0, padding: '3px 10px', fontSize: 12.5, background: 'rgba(127,127,160,0.18)', borderRadius: 8, cursor: 'pointer' }}
+              onClick={(e) => { e.stopPropagation(); setPicked(null) }}
+            >
+              ↺ Recommencer
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export function PopupBubble({ el, onClose }) {

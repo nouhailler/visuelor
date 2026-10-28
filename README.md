@@ -50,7 +50,7 @@ fonctionne alors sans aucune connexion.
 |---|---|
 | Tableau de bord | Création depuis **6 modèles**, renommer, dupliquer, supprimer, **dossiers filtrants + déplacement** |
 | Éditeur | Drag & drop, 8 poignées de redimensionnement, calques (avancer/reculer), verrouillage, multi-diapositives (ajout, duplication, réordonnancement, fond) |
-| Éléments | Texte (Google Fonts, gras/italique/alignement/couleur/fond), formes (rectangle arrondi, ellipse, triangle), images (import local ou URL, cover/contain), vidéos YouTube/Vimeo, zones interactives invisibles |
+| Éléments | Texte (Google Fonts, gras/italique/alignement/couleur/fond), formes (rectangle arrondi, ellipse, triangle), images (import local ou URL, cover/contain), vidéos YouTube/Vimeo, **quiz QCM interactifs**, **audio** (fichier local ou URL), zones interactives invisibles |
 | Interactivité | Popup au survol ou au clic sur **n'importe quel élément** (titre, texte, image), lien vers une diapositive ou un site externe |
 | Lecture | Plein écran, navigation ←/→/Espace/Échap, responsive, impression PDF via le navigateur |
 | Éditeur UX | Panneau contextuel, historique annuler/rétablir (Ctrl+Z/Ctrl+Y, 60 niveaux), raccourcis (Suppr, Ctrl+D, flèches), ouverture du texte par double-clic, sauvegarde automatique |
@@ -102,9 +102,19 @@ Bouton **⬇** dans l'éditeur :
   dépendance** ; les vidéos intégrées apparaissent comme espaces réservés.
 - Rasterisation fidèle : polices chargées, `object-fit` cover/contain répliqué,
   opacité, bordures, textWrap manuel aligné left/center/right.
+- Les **quiz** s'impriment en statique avec la bonne réponse surlignée.
 
 Tests : `scripts/test-pdf.mjs` valide la structure du PDF (xref, objets, offsets),
 et `scripts/test-standalone.mjs` celui de l'export HTML chiffré.
+
+## Quiz + audio (100 % local)
+
+- **🧠 Quiz** (rail de l'éditeur) : question, réponses illimitées (2 minimum),
+  bonne réponse cochée dans le panneau, messages personnalisables.
+  En lecture : clic sur une réponse → surlignage ✓/✗ immédiat, message, bouton
+  « ↺ Recommencer ». Le lecteur autonome chiffré rejoue les quiz en vanilla JS.
+- **🔊 Audio** : fichier importé depuis l'appareil (stocké en dataURL dans le
+  localStorage) ou URL. Titre affiché ; non imprimable (carte réservée à l'export).
 
 ## Dossiers au tableau de bord
 
@@ -120,7 +130,7 @@ et `scripts/test-standalone.mjs` celui de l'export HTML chiffré.
 Le rangement vit dans `localStorage` (clé `visuelor.folders`), ajouté aux
 présentations via le champ `folder` — rien ne quitte l'appareil.
 
-## Bibliothèque de modèles (6)
+## Bibliothèque de modèles (7)
 
 | Modèle | Contenu |
 |---|---|
@@ -130,8 +140,9 @@ présentations via le champ `folder` — rien ne quitte l'appareil.
 | **Sommaire interactif** | Sommaire cliquable + 3 chapitres, chaque diapo propose « ← Sommaire » — la navigation non linéaire prête à l'emploi |
 | **Fiche produit** | Image annotée, caractéristiques, prix, hotspot popup — cas d'usage entreprise |
 | **Citation** | Grande typo Playfair sur fond crème, pour ponctuer une présentation |
+| **Quiz** | QCM interactif de démonstration (correction immédiate, recommencer) |
 
 ## Prochaines étapes
 
-- Quiz interactifs + sons/multimédia, durcissement (tests E2E, accessibilité, perfs)
+- Durcissement (tests E2E automatisés, accessibilité, perfs des scènes riches)
 - Collaboration temps réel hors ligne (piste : CRDT type Yjs + share local)

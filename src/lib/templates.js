@@ -66,6 +66,27 @@ export function makeElement(type, patch = {}) {
         h: 60,
         ...patch,
       }
+    case 'quiz': // QCM interactif : une seule bonne réponse, feedback immédiat
+      return {
+        ...base,
+        w: 560,
+        h: 340,
+        question: 'Question — éditez-moi dans le panneau de droite',
+        choices: ['Réponse A', 'Réponse B', 'Réponse C'],
+        correct: 0, // index de la bonne réponse
+        ok: '✓ Exact !',
+        ko: '✗ Raté — la bonne réponse est surlignée.',
+        ...patch,
+      }
+    case 'audio': // fichier audio stocké localement (dataURL) ou URL
+      return {
+        ...base,
+        w: 440,
+        h: 76,
+        src: '',
+        title: 'Piste audio',
+        ...patch,
+      }
     default:
       return base
   }
@@ -305,6 +326,39 @@ function citationTemplate() {
   }
 }
 
+// ── Quiz : démonstration du QCM interactif ────────────────────────────────────
+function quizTemplate() {
+  const s = slide({ background: '#F6F6FA' })
+  s.elements.push(
+    makeElement('text', {
+      x: 60, y: 40, w: 1170, h: 70,
+      text: 'Quiz — à vous de jouer', fontSize: 46, bold: true, color: '#262640', fontFamily: 'Montserrat',
+    }),
+    makeElement('quiz', {
+      x: 90, y: 150, w: 660, h: 380,
+      question: 'Quel est le plus grand océan du monde ?',
+      choices: ['Le Pacifique', 'L’Atlantique', 'L’Indien'],
+      correct: 0,
+    }),
+    makeElement('text', {
+      x: 90, y: 580, w: 660, h: 60,
+      text: 'En lecture, le lecteur clique une réponse : feedback immédiat et bouton « Recommencer ».',
+      fontSize: 18, color: '#6b6b85',
+    }),
+    makeElement('text', {
+      x: 810, y: 150, w: 410, h: 380,
+      text: '🧠 Créez vos propres quiz via le rail « 🧠 » de l’éditeur.\n\n• Question et réponses modifiables dans le panneau de droite\n• Cochez la bonne réponse\n• Le lecteur autonome chiffré gère aussi les quiz', fontSize: 20, color: '#4a4a66', lineHeight: 1.4,
+    }),
+  )
+  return {
+    id: uid('pres'),
+    title: 'Quiz — modèle',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    slides: [s],
+  }
+}
+
 export const TEMPLATES = [
   { id: 'blank', name: 'Vierge', desc: 'Une diapositive toute neuve.', swatch: '#ffffff', build: blankTemplate },
   { id: 'lesson', name: 'Photo annotée', desc: 'Zones cliquables + popups, parfait pour l’enseignement.', swatch: '#8A9B77', build: lessonTemplate },
@@ -312,6 +366,7 @@ export const TEMPLATES = [
   { id: 'sommaire', name: 'Sommaire interactif', desc: 'Sommaire cliquable + 3 chapitres liés (navigation non linéaire prête à l’emploi).', swatch: '#1E1E3A', build: sommaireTemplate },
   { id: 'produit', name: 'Fiche produit', desc: 'Image annotée, caractéristiques, prix — exemple entreprise.', swatch: '#0E7C7B', build: productTemplate },
   { id: 'citation', name: 'Citation', desc: 'Grande typographie Playfair pour ponctuer une présentation.', swatch: '#FDF6E3', build: citationTemplate },
+  { id: 'quiz', name: 'Quiz', desc: 'QCM interactif avec correction immédiate — idéalement joué en lecture.', swatch: '#4FC98A', build: quizTemplate },
 ]
 
 export function createFromTemplate(templateId) {

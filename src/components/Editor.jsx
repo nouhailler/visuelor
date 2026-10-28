@@ -231,6 +231,8 @@ export function Editor({ presentationId, onBack, onPresent }) {
           <button onClick={() => imageInput.current?.click()} title="Image">🖼️</button>
           <button onClick={() => addElement('embed', { x: 320, y: 180, w: 640, h: 360 })} title="Vidéo (YouTube, Vimeo)">📺</button>
           <button onClick={() => addElement('hotspot', { x: 570, y: 330, w: 140, h: 60 })} title="Zone interactive (popup / lien)">👆</button>
+          <button onClick={() => addElement('quiz', { x: 380, y: 190, w: 520, h: 360 })} title="Quiz interactif (QCM)">🧠</button>
+          <button onClick={() => addElement('audio', { x: 420, y: 580, w: 440, h: 76 })} title="Audio (fichier local ou URL)">🔊</button>
           <input
             ref={imageInput} type="file" accept="image/*" hidden
             onChange={(e) => {

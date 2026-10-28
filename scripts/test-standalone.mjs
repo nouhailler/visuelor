@@ -6,6 +6,18 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 
+// WAV minimal (0,1 s de silence, 8 kHz mono 8 bits) pour tester l'élément audio
+const SILENT_WAV = (() => {
+  const n = 800
+  const buf = Buffer.alloc(44 + n)
+  buf.write('RIFF', 0); buf.writeUInt32LE(36 + n, 4); buf.write('WAVE', 8)
+  buf.write('fmt ', 12); buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20)
+  buf.writeUInt16LE(1, 22); buf.writeUInt32LE(8000, 24); buf.writeUInt32LE(8000, 28)
+  buf.writeUInt16LE(1, 32); buf.writeUInt8(8, 34)
+  buf.write('data', 36); buf.writeUInt32LE(n, 40)
+  return 'data:audio/wav;base64,' + buf.toString('base64')
+})()
+
 // Réplication de crypto.js en pur Node (WebCrypto est natif depuis Node 20)
 async function encryptToPayload(obj, password) {
   const te = new TextEncoder()
@@ -39,6 +51,18 @@ const pres = {
           id: 'e4', type: 'text', x: 100, y: 380, w: 400, h: 60, text: 'Aller à la diapo 2', fontSize: 24, color: '#000',
           fontFamily: 'Inter', link: { type: 'slide', slideId: 's2', url: '' }, popup: { enabled: false },
         },
+        {
+          id: 'e5', type: 'quiz', x: 600, y: 300, w: 560, h: 300,
+          question: 'Quel est le plus grand océan ?',
+          choices: ['Le Pacifique', 'L’Atlantique', 'L’Indien'],
+          correct: 0,
+          popup: { enabled: false }, link: { type: 'none', slideId: null, url: '' },
+        },
+        {
+          id: 'e6', type: 'audio', x: 600, y: 620, w: 440, h: 76,
+          src: SILENT_WAV, title: 'Consigne',
+          popup: { enabled: false }, link: { type: 'none', slideId: null, url: '' },
+        },
       ],
     },
     { id: 's2', background: '#eef', elements: [{ id: 'f1', type: 'text', x: 200, y: 200, w: 600, h: 80, text: 'Diapositive 2', fontSize: 50, color: '#000', fontFamily: 'Inter' }] },
@@ -62,5 +86,5 @@ execFileSync(process.execPath, ['--check', join(dir, 'viewer.js')], { stdio: 'pi
 console.log('syntaxe du lecteur embarqué : OK')
 
 // Le payload ne doit contenir aucune chaîne en clair du contenu
-if (html.includes('Bonjour chiffré') || html.includes('Contenu secret')) throw new Error('FUITE : contenu en clair présent !')
+if (html.includes('Bonjour chiffré') || html.includes('Contenu secret') || html.includes('Quel est le plus grand océan')) throw new Error('FUITE : contenu en clair présent !')
 console.log('aucun contenu en clair dans le fichier : OK')

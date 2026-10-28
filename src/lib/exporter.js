@@ -140,6 +140,75 @@ function drawElement(ctx, el, img) {
     ctx.font = "28px 'Inter', sans-serif"
     ctx.fillText('📺 Vidéo intégrée (non exportée)', el.x + el.w / 2, el.y + el.h / 2)
     ctx.restore()
+    return
+  }
+
+  // Quiz : rendu statique avec la bonne réponse surlignée (utile pour imprimer)
+  if (el.type === 'quiz') {
+    const pad = 18
+    ctx.save()
+    ctx.fillStyle = 'rgba(127,127,160,0.10)'
+    ctx.beginPath()
+    ctx.roundRect(el.x, el.y, el.w, el.h, 14)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(127,127,160,0.35)'
+    ctx.lineWidth = 1
+    ctx.stroke()
+    // question
+    ctx.font = "700 20px 'Inter', sans-serif"
+    ctx.fillStyle = '#1c1c28'
+    ctx.textBaseline = 'top'
+    const qLines = wrapLines(ctx, el.question || '', el.w - pad * 2)
+    let y = el.y + pad
+    for (const line of qLines) { ctx.fillText(line, el.x + pad, y); y += 26 }
+    // réponses réparties sur la place restante
+    const choices = Array.isArray(el.choices) ? el.choices : []
+    const zoneTop = y + 8
+    const zoneH = Math.max(0, el.y + el.h - pad - zoneTop)
+    const rowH = Math.min(44, Math.floor(zoneH / Math.max(1, choices.length)) - 7)
+    choices.forEach((c, i) => {
+      const cy = zoneTop + i * (rowH + 7)
+      const okOne = i === el.correct
+      ctx.beginPath()
+      ctx.roundRect(el.x + pad, cy, el.w - pad * 2, rowH, 10)
+      ctx.fillStyle = okOne ? 'rgba(79,201,138,0.18)' : 'rgba(127,127,160,0.08)'
+      ctx.fill()
+      ctx.strokeStyle = okOne ? '#4fc98a' : 'rgba(127,127,160,0.45)'
+      ctx.stroke()
+      ctx.font = "15px 'Inter', sans-serif"
+      ctx.fillStyle = okOne ? '#1e7a52' : '#1c1c28'
+      ctx.textBaseline = 'middle'
+      ctx.fillText((okOne ? '✓ ' : '') + c, el.x + pad + 12, cy + rowH / 2)
+    })
+    ctx.restore()
+    return
+  }
+
+  // Audio : carte avec titre (le son n'est pas imprimable)
+  if (el.type === 'audio') {
+    ctx.save()
+    ctx.fillStyle = 'rgba(127,127,160,0.10)'
+    ctx.beginPath()
+    ctx.roundRect(el.x, el.y, el.w, el.h, 12)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(127,127,160,0.35)'
+    ctx.stroke()
+    ctx.fillStyle = '#8a8aa8'
+    ctx.font = "13px 'Inter', sans-serif"
+    ctx.textBaseline = 'top'
+    ctx.fillText('🔊 ' + (el.title || 'Piste audio'), el.x + 12, el.y + 8)
+    // fausse barre de lecture
+    const by = el.y + el.h - 22
+    ctx.beginPath()
+    ctx.roundRect(el.x + 12, by, el.w - 24, 8, 4)
+    ctx.fillStyle = 'rgba(127,127,160,0.25)'
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(el.x + 20, by + 4, 8, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(127,127,160,0.55)'
+    ctx.fill()
+    ctx.restore()
+    return
   }
 }
 

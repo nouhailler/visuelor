@@ -158,6 +158,80 @@ export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDu
         </div>
       )}
 
+      {/* Quiz */}
+      {el.type === 'quiz' && (
+        <div className="sect">
+          <h3>🧠 Quiz</h3>
+          <div className="field">
+            <label>Question</label>
+            <textarea value={el.question || ''} onChange={(e) => p({ question: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Réponses — sélectionnez la bonne</label>
+            {(el.choices || []).map((c, i) => (
+              <div className="row" key={i} style={{ alignItems: 'center' }}>
+                <input
+                  type="radio" name={'quiz-' + el.id} checked={el.correct === i}
+                  onChange={() => p({ correct: i })} title="Bonne réponse"
+                  style={{ flex: '0 0 auto' }}
+                />
+                <input
+                  type="text" value={c} style={{ flex: 1, minWidth: 0 }}
+                  onChange={(e) => { const ch = [...el.choices]; ch[i] = e.target.value; p({ choices: ch }) }}
+                />
+                <button
+                  className="btn small ghost"
+                  disabled={(el.choices || []).length <= 2}
+                  title="Supprimer cette réponse"
+                  onClick={() => {
+                    const ch = el.choices.filter((_, j) => j !== i)
+                    const corr = el.correct === i ? 0 : (el.correct > i ? el.correct - 1 : el.correct)
+                    p({ choices: ch, correct: corr })
+                  }}
+                >✕</button>
+              </div>
+            ))}
+            <button className="btn small" onClick={() => p({ choices: [...(el.choices || []), 'Nouvelle réponse'] })}>
+              + Ajouter une réponse
+            </button>
+          </div>
+          <div className="field">
+            <label>Message si correct</label>
+            <input type="text" value={el.ok || ''} onChange={(e) => p({ ok: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Message si erreur</label>
+            <input type="text" value={el.ko || ''} onChange={(e) => p({ ko: e.target.value })} />
+          </div>
+          <p style={{ color: 'var(--text-dim)', fontSize: 12 }}>
+            Le quiz se joue <b>en mode lecture</b> : clic sur une réponse, correction immédiate, bouton « ↺ Recommencer ».
+          </p>
+        </div>
+      )}
+
+      {/* Audio */}
+      {el.type === 'audio' && (
+        <div className="sect">
+          <h3>🔊 Audio</h3>
+          <div className="field">
+            <label>Importer depuis l'appareil (mp3, ogg, wav)</label>
+            <input type="file" accept="audio/*" onChange={uploadImage((src) => p({ src }))} />
+          </div>
+          <div className="field">
+            <label>…ou URL</label>
+            <input type="text" value={el.src?.startsWith('data:') ? '' : el.src || ''} placeholder="https://…"
+              onChange={(e) => p({ src: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Titre affiché</label>
+            <input type="text" value={el.title || ''} onChange={(e) => p({ title: e.target.value })} />
+          </div>
+          <p style={{ color: 'var(--text-dim)', fontSize: 12 }}>
+            Un fichier importé est stocké <b>localement</b> (dans le localStorage) — rien n'est envoyé.
+          </p>
+        </div>
+      )}
+
       {/* Interactivité : popup */}
       <div className="sect">
         <h3>💬 Popup au survol / clic</h3>
@@ -259,5 +333,5 @@ export function ColorField({ label, value, onChange, swatches }) {
   )
 }
 
-const ICON = { text: '🔤', shape: '◼️', image: '🖼️', embed: '📺', hotspot: '👆' }
-const LABEL = { text: 'Texte', shape: 'Forme', image: 'Image', embed: 'Vidéo intégrée', hotspot: 'Zone interactive' }
+const ICON = { text: '🔤', shape: '◼️', image: '🖼️', embed: '📺', hotspot: '👆', quiz: '🧠', audio: '🔊' }
+const LABEL = { text: 'Texte', shape: 'Forme', image: 'Image', embed: 'Vidéo intégrée', hotspot: 'Zone interactive', quiz: 'Quiz', audio: 'Audio' }
