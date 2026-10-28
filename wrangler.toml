@@ -1,0 +1,4 @@
+# Cloudflare Pages — permet aussi un déploiement manuel : npx wrangler pages deploy
+name = "visuelor"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "dist"

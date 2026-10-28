@@ -20,6 +20,27 @@ node scripts/test-standalone.mjs     # vérifie l'export HTML chiffré
 node scripts/test-pdf.mjs            # vérifie la structure PDF
 ```
 
+## Mettre en ligne sur Cloudflare Pages (sans npm local)
+
+Cloudflare compile l'app à partir du dépôt GitHub : rien à installer sur sa machine.
+
+1. dash.cloudflare.com → **Workers & Pages** → **Create** → onglet **Pages** →
+   **Connect to Git** → dépôt `visuelor`.
+2. Réglages de build : preset **Vite** · commande `npm run build` · dossier `dist`
+   (Node 20 est fixé par `.node-version`).
+3. **Save and Deploy** → adresse du type `https://visuelor.pages.dev`.
+   Chaque `git push` sur `main` redéploie automatiquement.
+
+Fichiers liés : `wrangler.toml` (dossier de sortie ; permet aussi
+`npx wrangler pages deploy` en manuel), `public/_headers` (pas de cache sur
+`index.html` / `sw.js`, cache long sur `assets/`), `.node-version`.
+Le service worker charge les pages en « réseau d'abord » : une nouvelle version
+déployée est prise en compte au rechargement, et l'app reste utilisable hors ligne.
+
+Les présentations restent dans le navigateur de chacun (`localStorage`) : rien
+n'est envoyé à Cloudflare. Une fois l'app en ligne, le lien `#/v/…` s'ouvre chez
+les destinataires (le fichier HTML protégé reste plus sûr pour une photo lourde).
+
 ## Partage protégé, 100 % sans serveur
 
 - **Lien chiffré `…/#/v/<payload>`** — la présentation est chiffrée (AES-GCM-256,
