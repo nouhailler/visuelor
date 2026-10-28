@@ -16,6 +16,7 @@ npm run build    # build de production dans dist/
 npm run preview  # sert la build (nécessaire pour le service worker PWA)
 node scripts/gen-icons.js            # régénère les icônes PWA
 node scripts/test-standalone.mjs     # vérifie l'export HTML chiffré
+node scripts/test-pdf.mjs            # vérifie la structure PDF
 ```
 
 ## Partage protégé, 100 % sans serveur
@@ -47,7 +48,7 @@ fonctionne alors sans aucune connexion.
 
 | Zone | Fonctionnalités |
 |---|---|
-| Tableau de bord | Création depuis modèles (vierge, photo annotée, pitch), renommer, dupliquer, supprimer |
+| Tableau de bord | Création depuis **6 modèles**, renommer, dupliquer, supprimer, **dossiers filtrants + déplacement** |
 | Éditeur | Drag & drop, 8 poignées de redimensionnement, calques (avancer/reculer), verrouillage, multi-diapositives (ajout, duplication, réordonnancement, fond) |
 | Éléments | Texte (Google Fonts, gras/italique/alignement/couleur/fond), formes (rectangle arrondi, ellipse, triangle), images (import local ou URL, cover/contain), vidéos YouTube/Vimeo, zones interactives invisibles |
 | Interactivité | Popup au survol ou au clic sur **n'importe quel élément** (titre, texte, image), lien vers une diapositive ou un site externe |
@@ -105,8 +106,32 @@ Bouton **⬇** dans l'éditeur :
 Tests : `scripts/test-pdf.mjs` valide la structure du PDF (xref, objets, offsets),
 et `scripts/test-standalone.mjs` celui de l'export HTML chiffré.
 
+## Dossiers au tableau de bord
+
+- Barre de **dossiers filtrants** : « Tous », « Sans dossier » et chaque dossier
+  (des comptes sont affichés sur chaque puce).
+- `➕` crée un dossier ; quand un dossier est affiché, `✏️` le renomme (le nom est
+  propagé sur toutes les présentations), `🗑` le supprime (les retournent à la
+  racine).
+- Menu `⋯` d'une carte → **📁 Déplacer vers…** : racine, dossiers existants, ou
+  création d'un nouveau dossier. L'emplacement 📁 s'affiche sur la carte.
+- Une présentation créée alors qu'un dossier est affiché s'y range d'office.
+
+Le rangement vit dans `localStorage` (clé `visuelor.folders`), ajouté aux
+présentations via le champ `folder` — rien ne quitte l'appareil.
+
+## Bibliothèque de modèles (6)
+
+| Modèle | Contenu |
+|---|---|
+| **Vierge** | Une diapositive toute neuve |
+| **Photo annotée** | Demo hotspots + popups (enseignement) |
+| **Pitch deck** | Couverture sombre + diapo de formes interactives |
+| **Sommaire interactif** | Sommaire cliquable + 3 chapitres, chaque diapo propose « ← Sommaire » — la navigation non linéaire prête à l'emploi |
+| **Fiche produit** | Image annotée, caractéristiques, prix, hotspot popup — cas d'usage entreprise |
+| **Citation** | Grande typo Playfair sur fond crème, pour ponctuer une présentation |
+
 ## Prochaines étapes
 
-- Rôles et dossiers (tableau de bord), bibliothèque de modèles enrichie
-- Export PDF outillé (aujourd'hui : impression du navigateur) et images PNG
+- Quiz interactifs + sons/multimédia, durcissement (tests E2E, accessibilité, perfs)
 - Collaboration temps réel hors ligne (piste : CRDT type Yjs + share local)

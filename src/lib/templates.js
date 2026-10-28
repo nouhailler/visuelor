@@ -147,10 +147,171 @@ function blankTemplate() {
   }
 }
 
+// ── Sommaire interactif : démonstration de la navigation non linéaire ─────────
+// On construit D'ABORD les diapos chapitres pour récupérer leurs IDs,
+// puis on câble les liens du sommaire et des boutons « ← Sommaire ».
+function sommaireTemplate() {
+  const labels = ['Chapitre 1 — Le projet', 'Chapitre 2 — La méthode', 'Chapitre 3 — La suite']
+  const texts = [
+    'Ce que nous construisons, pour qui, et pourquoi maintenant.',
+    'Comment ce que nous faisons se distingue des autres approches.',
+    'Le calendrier, les prochaines échéances, les points de décision.',
+  ]
+  const chapters = labels.map((title, i) => {
+    const s = slide({ background: '#16161F' })
+    s.elements.push(
+      makeElement('text', {
+        x: 90, y: 80, w: 1100, h: 80,
+        text: title, fontSize: 52, bold: true, color: '#FFFFFF', fontFamily: 'Montserrat',
+      }),
+      makeElement('shape', { x: 90, y: 180, w: 90, h: 6, radius: 3, fill: '#6C6CE5' }),
+      makeElement('text', {
+        x: 90, y: 280, w: 900, h: 90,
+        text: texts[i], fontSize: 30, color: '#9C9CB4', fontFamily: 'Inter',
+      }),
+      makeElement('text', {
+        x: 950, y: 340, w: 260, h: 200,
+        text: `0${i + 1}`, fontSize: 160, bold: true, color: '#262640', fontFamily: 'Montserrat', align: 'right',
+      }),
+    )
+    return s
+  })
+
+  // Diapo sommaire : liens vers les 3 chapitres
+  const menu = slide({ background: '#1E1E3A' })
+  menu.elements.push(
+    makeElement('text', {
+      x: 90, y: 70, w: 900, h: 80,
+      text: 'Sommaire', fontSize: 60, bold: true, color: '#FFFFFF', fontFamily: 'Montserrat',
+    }),
+    makeElement('shape', { x: 92, y: 165, w: 110, h: 6, radius: 3, fill: '#6C6CE5' }),
+  )
+  chapters.forEach((c, i) => {
+    menu.elements.push(
+      makeElement('text', {
+        x: 90, y: 240 + i * 140, w: 1000, h: 80,
+        text: `0${i + 1} — ${labels[i].split('— ')[1]}`, fontSize: 40, color: '#ECECF4', fontFamily: 'Inter',
+        link: { type: 'slide', slideId: c.id, url: '' },
+      }),
+    )
+  })
+  menu.elements.push(
+    makeElement('text', {
+      x: 90, y: 660, w: 1000, h: 40,
+      text: '👆 Cliquez un chapitre — à l\'inverse des slides classiques, le lecteur choisit son chemin.',
+      fontSize: 20, color: '#6E6E90', fontFamily: 'Inter',
+    }),
+  )
+
+  // Boutons « ← Sommaire » dans chaque chapitre
+  chapters.forEach((c) => {
+    c.elements.push(
+      makeElement('text', {
+        x: 90, y: 620, w: 300, h: 60,
+        text: '← Sommaire', fontSize: 26, bold: true, color: '#6C6CE5', fontFamily: 'Inter',
+        link: { type: 'slide', slideId: menu.id, url: '' },
+      }),
+    )
+  })
+
+  return {
+    id: uid('pres'),
+    title: 'Sommaire interactif — modèle',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    slides: [menu, ...chapters],
+  }
+}
+
+// ── Fiche produit : cas d'usage entreprise (image, specs, prix, popup) ────────
+const PRODUIT_PLACEHOLDER =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480">
+      <rect width="480" height="480" fill="#E3F2F1"/>
+      <circle cx="240" cy="210" r="98" fill="#0E7C7B"/>
+      <circle cx="240" cy="210" r="66" fill="#17918F"/>
+      <rect x="180" y="330" width="120" height="14" rx="7" fill="#0E7C7B"/>
+      <rect x="150" y="356" width="180" height="10" rx="5" fill="#B9DAD8"/>
+      <text x="240" y="440" text-anchor="middle" font-family="Arial" font-size="22" fill="#0E7C7B">Image produit — remplacez-moi</text>
+    </svg>`,
+  )
+
+function productTemplate() {
+  const s = slide({ background: '#F7FAFA' })
+  s.elements.push(
+    makeElement('text', {
+      x: 60, y: 40, w: 1170, h: 80,
+      text: 'Baromètre connecté Aria-M', fontSize: 48, bold: true, color: '#0C3A39', fontFamily: 'Montserrat',
+    }),
+    makeElement('text', {
+      x: 60, y: 115, w: 1170, h: 50,
+      text: 'Suivi du climat intérieur — bureau, serre, cave', fontSize: 24, color: '#5C7A78', fontFamily: 'Inter',
+    }),
+    makeElement('image', { x: 60, y: 200, w: 470, h: 470, src: PRODUIT_PLACEHOLDER, fit: 'contain' }),
+    makeElement('text', { x: 620, y: 220, w: 560, h: 70, text: 'Caractéristiques', fontSize: 34, bold: true, color: '#0C3A39', fontFamily: 'Montserrat' }),
+    makeElement('text', {
+      x: 620, y: 290, w: 560, h: 190,
+      text: '• Précision  ±0,2 °C / ±1,5 % HR\n• autonomie 18 mois (1 pile AA)\n• historique 6 mois, export local\n• Bluetooth et Wi-Fi désactivés par défaut', fontSize: 26, color: '#22403E', fontFamily: 'Inter', lineHeight: 1.45,
+    }),
+    makeElement('shape', { x: 620, y: 520, w: 260, h: 120, shape: 'rect', radius: 14, fill: '#0E7C7B' }),
+    makeElement('text', {
+      x: 630, y: 540, w: 240, h: 45, text: '79 €', fontSize: 40, bold: true, color: '#FFFFFF', fontFamily: 'Montserrat',
+    }),
+    makeElement('text', {
+      x: 630, y: 592, w: 240, h: 35, text: '2 piles incluses', fontSize: 20, color: '#CDEBEA', fontFamily: 'Inter',
+    }),
+    makeElement('hotspot', {
+      x: 165, y: 300, w: 150, h: 130,
+      popup: { enabled: true, trigger: 'hover', title: 'Capteur précis', text: 'Cellule de mesure certifiée : l\'écart de ±0,2 °C tient sur toute la plage de −10 à +50 °C.', image: '' },
+    }),
+  )
+  return {
+    id: uid('pres'),
+    title: 'Fiche produit — modèle',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    slides: [s],
+  }
+}
+
+// ── Citation : grande typo Playfair, slide intercalaire ───────────────────────
+function citationTemplate() {
+  const s = slide({ background: '#FDF6E3' })
+  s.elements.push(
+    makeElement('shape', { x: 80, y: 80, w: 1120, h: 560, shape: 'rect', radius: 2, fill: '#FDF6E3' }),
+    makeElement('shape', { x: 80, y: 80, w: 1120, h: 560, shape: 'rect', radius: 2, fill: 'transparent', borderColor: '#D9CBAF', borderWidth: 2 }),
+    makeElement('text', {
+      x: 140, y: 150, w: 1000, h: 90,
+      text: '«', fontSize: 120, color: '#DCD2BE', fontFamily: 'Playfair Display', italic: true,
+    }),
+    makeElement('text', {
+      x: 160, y: 250, w: 960, h: 240,
+      text: 'Une présentation n\'est pas une suite de pages,\nc\'est une promenade que l\'on invite à choisir.',
+      fontSize: 52, color: '#2F2A20', fontFamily: 'Playfair Display', italic: true, align: 'center', lineHeight: 1.35,
+    }),
+    makeElement('text', {
+      x: 160, y: 540, w: 960, h: 50,
+      text: '— Principe de visuelor', fontSize: 24, color: '#8A7B5C', fontFamily: 'Playfair Display', align: 'center',
+    }),
+    makeElement('shape', { x: 600, y: 610, w: 80, h: 3, radius: 1.5, fill: '#D9CBAF' }),
+  )
+  return {
+    id: uid('pres'),
+    title: 'Citation — modèle',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    slides: [s],
+  }
+}
+
 export const TEMPLATES = [
   { id: 'blank', name: 'Vierge', desc: 'Une diapositive toute neuve.', swatch: '#ffffff', build: blankTemplate },
   { id: 'lesson', name: 'Photo annotée', desc: 'Zones cliquables + popups, parfait pour l’enseignement.', swatch: '#8A9B77', build: lessonTemplate },
   { id: 'pitch', name: 'Pitch deck', desc: 'Couverture sombre + slide de démonstration interactive.', swatch: '#14142B', build: pitchTemplate },
+  { id: 'sommaire', name: 'Sommaire interactif', desc: 'Sommaire cliquable + 3 chapitres liés (navigation non linéaire prête à l’emploi).', swatch: '#1E1E3A', build: sommaireTemplate },
+  { id: 'produit', name: 'Fiche produit', desc: 'Image annotée, caractéristiques, prix — exemple entreprise.', swatch: '#0E7C7B', build: productTemplate },
+  { id: 'citation', name: 'Citation', desc: 'Grande typographie Playfair pour ponctuer une présentation.', swatch: '#FDF6E3', build: citationTemplate },
 ]
 
 export function createFromTemplate(templateId) {

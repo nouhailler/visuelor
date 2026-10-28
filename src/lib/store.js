@@ -74,6 +74,42 @@ export function formatDate(ts) {
   })
 }
 
+// ── Dossiers du tableau de bord (simple liste de libellés) ───────────────────
+const FOLDERS_KEY = 'visuelor.folders'
+
+export function loadFolders() {
+  try {
+    const raw = localStorage.getItem(FOLDERS_KEY)
+    const data = raw ? JSON.parse(raw) : []
+    return Array.isArray(data) ? data.filter((f) => typeof f === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function saveFolders(folders) {
+  try {
+    localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders.filter((f) => f && f.trim())))
+    return true
+  } catch (e) {
+    console.error('Impossible d’enregistrer les dossiers', e)
+    return false
+  }
+}
+
+// Renommer un dossier : propage le nouveau nom sur toutes les présentations.
+export function renameFolder(oldName, newName) {
+  saveFolders(loadFolders().map((f) => (f === oldName ? newName : f)))
+  const list = loadAll().map((p) => (p.folder === oldName ? { ...p, folder: newName } : p))
+  saveAll(list)
+}
+
+// Supprimer un dossier : les présentations retournent à la racine (sans dossier).
+export function deleteFolder(name) {
+  saveFolders(loadFolders().filter((f) => f !== name))
+  saveAll(loadAll().map((p) => (p.folder === name ? { ...p, folder: '' } : p)))
+}
+
 // Format de "scène" fixe : toutes les coordonnées sont en px dans un repère 1280×720.
 export const STAGE_W = 1280
 export const STAGE_H = 720

@@ -80,6 +80,16 @@ h1, h2, h3 { margin: 0; }
 .proj-card:hover .proj-actions { opacity: 1; }
 .empty { color: var(--text-dim); text-align: center; padding: 60px 0; }
 
+/* ── Dossiers (barre de filtres) ────────────────────────────────────────── */
+.folder-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 26px 0 0; padding-top: 22px; border-top: 1px solid var(--line); }
+.folder-chip { background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 7px 14px; font-size: 13px; cursor: pointer; transition: border-color 0.12s, background 0.12s; white-space: nowrap; }
+.folder-chip:hover { border-color: var(--accent); }
+.folder-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.folder-chip.add { padding: 7px 11px; color: var(--text-dim); }
+.folder-chip.add:hover { color: var(--text); }
+.folder-tools { display: inline-flex; gap: 4px; margin-left: 4px; }
+.folder-tools .btn { padding: 4px 8px; }
+
 /* ── Éditeur ─────────────────────────────────────────────────────────────── */
 .editor { display: flex; flex-direction: column; height: 100%; }
 .topbar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--bg-2); border-bottom: 1px solid var(--line); }
