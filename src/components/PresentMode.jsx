@@ -9,8 +9,17 @@ import { Stage } from './Stage.jsx'
 export function PresentMode({ presentationId, presentation, shared = false, onExit }) {
   const [pres] = useState(() => presentation || loadOne(presentationId))
   const [idx, setIdx] = useState(0)
+  const [tagsQuiet, setTagsQuiet] = useState(false) // noms visibles seulement au survol
+  const [listOpen, setListOpen] = useState(true)
+  const [hlId, setHlId] = useState(null)
 
   const slide = pres?.slides[idx]
+  // personnes identifiées de la diapo, de gauche à droite (comme on les décrit sur une photo)
+  const people = (slide?.elements || [])
+    .filter((e) => e.type === 'tag')
+    .sort((a, b) => a.x + a.w / 2 - (b.x + b.w / 2))
+
+  useEffect(() => setHlId(null), [idx])
 
   const go = useCallback((n) => {
     setIdx((i) => Math.min(Math.max(0, (pres?.slides.length || 1) - 1), i + n))
@@ -60,14 +69,40 @@ export function PresentMode({ presentationId, presentation, shared = false, onEx
   }
 
   return (
-    <div className="present">
+    <div className={'present' + (tagsQuiet ? ' tags-quiet' : '')}>
       <div className="stage-outer">
         <Stage
           slide={slide}
           mode="present"
           onNavigate={navigateFromElement}
+          highlightId={hlId}
         />
       </div>
+
+      {people.length > 0 && listOpen && (
+        <aside className="people" aria-label="Personnes sur la photo">
+          <h3>👥 Qui est sur la photo ? ({people.length})</h3>
+          <ol>
+            {people.map((t, i) => (
+              <li key={t.id}>
+                <button
+                  className={hlId === t.id ? 'on' : ''}
+                  onMouseEnter={() => setHlId(t.id)}
+                  onMouseLeave={() => setHlId(null)}
+                  onClick={() => setHlId((v) => (v === t.id ? null : t.id))}
+                >
+                  <span className="dot" style={{ borderColor: t.color || '#F2B34C' }}>{i + 1}</span>
+                  <span>
+                    <div className="nm">{t.name || 'Inconnu(e)'}</div>
+                    {t.info && <div className="inf">{t.info}</div>}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="hint">De gauche à droite · survolez un nom pour voir la personne</div>
+        </aside>
+      )}
 
       {pres.slides.length > 0 && (
         <nav className="topnav" style={shared ? { opacity: 1 } : undefined}>
@@ -80,6 +115,17 @@ export function PresentMode({ presentationId, presentation, shared = false, onEx
           <span className="counter" aria-live="polite">{idx + 1} / {pres.slides.length}</span>
           <button className="btn small" onClick={() => go(1)} disabled={idx === pres.slides.length - 1} title="Suivant (→)" aria-label="Diapositive suivante">→</button>
           <span style={{ width: 1, height: 22, background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+          {people.length > 0 && (
+            <>
+              <button className="btn small" onClick={() => setTagsQuiet((v) => !v)} aria-pressed={!tagsQuiet}
+                title={tagsQuiet ? 'Afficher tous les noms sur la photo' : 'Masquer les noms (visibles au survol)'}>
+                🏷️ {tagsQuiet ? 'Afficher les noms' : 'Masquer les noms'}
+              </button>
+              <button className="btn small" onClick={() => setListOpen((v) => !v)} aria-pressed={listOpen} title="Liste des personnes">
+                👥 Liste
+              </button>
+            </>
+          )}
           <button className="btn small" onClick={() => window.print()} title="Imprimer / PDF" aria-label="Imprimer ou exporter en PDF">🖨</button>
           {shared && (
             <button

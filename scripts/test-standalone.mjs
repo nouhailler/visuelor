@@ -63,6 +63,11 @@ const pres = {
           src: SILENT_WAV, title: 'Consigne',
           popup: { enabled: false }, link: { type: 'none', slideId: null, url: '' },
         },
+        {
+          id: 'e7', type: 'tag', x: 300, y: 500, w: 90, h: 90,
+          name: 'Cousine Héloïse', info: 'fille de tonton Jacques', color: '#F2B34C',
+          popup: { enabled: false }, link: { type: 'none', slideId: null, url: '' },
+        },
       ],
     },
     { id: 's2', background: '#eef', elements: [{ id: 'f1', type: 'text', x: 200, y: 200, w: 600, h: 80, text: 'Diapositive 2', fontSize: 50, color: '#000', fontFamily: 'Inter' }] },
@@ -86,5 +91,5 @@ execFileSync(process.execPath, ['--check', join(dir, 'viewer.js')], { stdio: 'pi
 console.log('syntaxe du lecteur embarqué : OK')
 
 // Le payload ne doit contenir aucune chaîne en clair du contenu
-if (html.includes('Bonjour chiffré') || html.includes('Contenu secret') || html.includes('Quel est le plus grand océan')) throw new Error('FUITE : contenu en clair présent !')
+if (html.includes('Bonjour chiffré') || html.includes('Contenu secret') || html.includes('Quel est le plus grand océan') || html.includes('Héloïse')) throw new Error('FUITE : contenu en clair présent !')
 console.log('aucun contenu en clair dans le fichier : OK')

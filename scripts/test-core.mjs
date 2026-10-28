@@ -125,8 +125,8 @@ t('generatePassword : 14 caractères dans l\'alphabet', () => {
 })
 
 // ── templates.js ─────────────────────────────────────────────────────────────
-t('la bibliothèque contient 7 modèles construisibles', () => {
-  assert.equal(T.TEMPLATES.length, 7)
+t('la bibliothèque contient 8 modèles construisibles', () => {
+  assert.equal(T.TEMPLATES.length, 8)
   T.TEMPLATES.forEach((tpl) => {
     const p = tpl.build()
     assert.ok(p.id && p.title && Array.isArray(p.slides) && p.slides.length >= 1, tpl.id)
@@ -178,6 +178,25 @@ t('makeElement : quiz et audio ont des valeurs par défaut saines', () => {
   assert.ok(q.correct >= 0 && q.correct < q.choices.length)
   assert.equal(typeof a.title, 'string')
   assert.equal(a.type, 'audio')
+})
+
+t('makeElement : étiquette personne (nom, précision, couleur, cercle carré)', () => {
+  const g = T.makeElement('tag', { name: 'Tante Monique' })
+  assert.equal(g.type, 'tag')
+  assert.equal(g.name, 'Tante Monique')
+  assert.equal(g.info, '')
+  assert.ok(/^#[0-9a-f]{6}$/i.test(g.color))
+  assert.equal(g.w, g.h)
+})
+t('modèle mariage : une photo + des personnes nommées posées dessus', () => {
+  const p = T.createFromTemplate('mariage')
+  const els = p.slides[0].elements
+  const img = els.find((e) => e.type === 'image')
+  const tags = els.filter((e) => e.type === 'tag')
+  assert.ok(img && img.src)
+  assert.ok(tags.length >= 2 && tags.every((g) => g.name))
+  tags.forEach((g) => assert.ok(g.x >= img.x && g.y >= img.y && g.x + g.w <= img.x + img.w && g.y + g.h <= img.y + img.h))
+  assert.ok(els.indexOf(img) < els.indexOf(tags[0]), 'les étiquettes doivent être au-dessus de la photo')
 })
 
 console.log(`\n${pass} réussis, ${fail} échoués`)

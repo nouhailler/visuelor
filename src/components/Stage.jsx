@@ -9,7 +9,7 @@ import { matchesEmbed } from './embeds.jsx'
 
 const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
 
-export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureStart, onNavigate }) {
+export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureStart, onNavigate, placeTag = false, onPlaceTag, highlightId = null }) {
   const shellRef = useRef(null)
   const stageRef = useRef(null)
   const [scale, setScale] = useState(1)
@@ -37,7 +37,12 @@ export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureSt
   }, [scale])
 
   const startDrag = (e, el, kind, handle) => {
-    if (mode !== 'editor' || el.locked || editingRef.current === el.id) return
+    if (mode !== 'editor' || editingRef.current === el.id) return
+    if (el.locked) { // verrouillé : sélectionnable (pour éditer ses propriétés) mais immobile
+      e.stopPropagation()
+      onSelect(el.id)
+      return
+    }
     e.stopPropagation()
     onSelect(el.id)
     drag.current = {
@@ -85,6 +90,15 @@ export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureSt
     drag.current = null
   }
 
+  // Mode « identifier des personnes » : un clic sur la photo pose une étiquette
+  // centrée sur le point cliqué ; un clic sur une étiquette existante la sélectionne.
+  const placePointerDown = (e) => {
+    if (!placeTag || mode !== 'editor' || e.target.closest('.el.tag, .handles')) return
+    e.stopPropagation()
+    e.preventDefault()
+    onPlaceTag?.(toStage(e.clientX, e.clientY))
+  }
+
   const stagePointerDown = (e) => {
     if (e.target !== stageRef.current) return
     onSelect(null)
@@ -114,7 +128,8 @@ export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureSt
       <div
         ref={stageRef}
         className="stage"
-        style={{ width: STAGE_W, height: STAGE_H, transform: `scale(${scale})`, background: slide.background }}
+        style={{ width: STAGE_W, height: STAGE_H, transform: `scale(${scale})`, background: slide.background, cursor: placeTag ? 'crosshair' : undefined }}
+        onPointerDownCapture={placePointerDown}
         onPointerDown={stagePointerDown}
       >
         {slide.elements.map((el) => (
@@ -133,6 +148,7 @@ export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureSt
               editingText={!isPresent && editingId === el.id}
               onTextCommit={commitText}
               onNavigate={onNavigate}
+              highlighted={highlightId === el.id}
             />
             {!isPresent && editingId === el.id && <div className="sel-outline" />}
           </div>

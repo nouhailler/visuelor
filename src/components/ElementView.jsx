@@ -1,20 +1,22 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { matchesEmbed, embedSrc } from './embeds.jsx'
+import { STAGE_H } from '../lib/store.js'
 
 // Rendu d'un élément + interactivité (popup, lien), partagé entre :
 //  - l'éditeur (interactive=false : badges d'aide, pas de déclenchement),
 //  - le mode lecture (interactive=true : popups actives, liens actifs).
 // Mémoïsé : pendant un drag, seul l'élément déplacé est re-rendu.
 
-export const ElementView = memo(function ElementView({ el, interactive, editingText, onTextCommit, onNavigate, showBadges = false }) {
+export const ElementView = memo(function ElementView({ el, interactive, editingText, onTextCommit, onNavigate, showBadges = false, highlighted = false }) {
   const [popupOpen, setPopupOpen] = useState(false)
 
   useEffect(() => {
     setPopupOpen(false)
   }, [el.id, interactive])
 
-  const style = { left: el.x, top: el.y, width: el.w, height: el.h }
-  const cls = `el ${el.type}`
+  // positionné par son conteneur (Stage / vignette), qui porte déjà x/y/w/h
+  const style = { left: 0, top: 0, width: '100%', height: '100%' }
+  let cls = `el ${el.type}`
 
   let inner
   switch (el.type) {
@@ -97,6 +99,23 @@ export const ElementView = memo(function ElementView({ el, interactive, editingT
     case 'quiz':
       inner = <QuizView el={el} interactive={interactive} />
       break
+    case 'tag': {
+      // étiquette sous le visage, ou au-dessus si on est trop près du bas de la scène
+      const above = el.y + el.h > STAGE_H - 70
+      style['--tag-c'] = el.color || '#F2B34C'
+      if (highlighted) cls += ' hl'
+      if (popupOpen) cls += ' open'
+      inner = (
+        <>
+          <div className="tag-ring" />
+          <div className={'tag-label' + (above ? ' above' : '')}>
+            <span className={el.name ? '' : 'tag-empty'}>{el.name || 'Qui est-ce ?'}</span>
+            {el.info && <span className="tag-info">{el.info}</span>}
+          </div>
+        </>
+      )
+      break
+    }
     case 'audio':
       inner = interactive && el.src ? (
         <div className="inner" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center', background: 'rgba(127,127,160,0.10)', border: '1px solid rgba(127,127,160,0.35)', borderRadius: 12, padding: '8px 12px', boxSizing: 'border-box', overflow: 'hidden' }}>
@@ -115,7 +134,10 @@ export const ElementView = memo(function ElementView({ el, interactive, editingT
   const hasPopup = interactive && el.popup?.enabled
   const hasLink = interactive && el.link && el.link.type !== 'none'
   const ev = {}
-  if (hasPopup && !hasLink) {
+  if (interactive && el.type === 'tag') {
+    // toucher un visage (mobile) affiche/masque son nom et sa description
+    ev.onClick = (e) => { e.stopPropagation(); setPopupOpen((v) => !v) }
+  } else if (hasPopup && !hasLink) {
     if (el.popup.trigger === 'hover') {
       ev.onMouseEnter = () => setPopupOpen(true)
       ev.onMouseLeave = () => setPopupOpen(false)
@@ -130,7 +152,7 @@ export const ElementView = memo(function ElementView({ el, interactive, editingT
     <div className={cls} style={style} data-element-id={el.id} {...ev}>
       {inner}
       {showBadges && !interactive && <Badges el={el} />}
-      {hasPopup && popupOpen && <PopupBubble el={el} onClose={() => setPopupOpen(false)} />}
+      {hasPopup && popupOpen && el.type !== 'tag' && <PopupBubble el={el} onClose={() => setPopupOpen(false)} />}
     </div>
   )
 })

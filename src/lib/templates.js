@@ -87,6 +87,16 @@ export function makeElement(type, patch = {}) {
         title: 'Piste audio',
         ...patch,
       }
+    case 'tag': // personne identifiée sur une photo : cercle sur le visage + nom
+      return {
+        ...base,
+        w: 90,
+        h: 90,
+        name: '',
+        info: '', // ex. « cousine de la mariée »
+        color: '#F2B34C',
+        ...patch,
+      }
     default:
       return base
   }
@@ -359,6 +369,50 @@ function quizTemplate() {
   }
 }
 
+// ── Photo de mariage : qui est qui ? ─────────────────────────────────────────
+const MARIAGE_PLACEHOLDER =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600">
+      <rect width="960" height="600" fill="#EDE6DA"/>
+      <ellipse cx="480" cy="640" rx="560" ry="200" fill="#D9CDB8"/>
+      <g fill="#B8A88C">
+        <circle cx="250" cy="250" r="44"/><rect x="200" y="300" width="100" height="220" rx="40"/>
+        <circle cx="710" cy="250" r="44"/><rect x="660" y="300" width="100" height="220" rx="40"/>
+      </g>
+      <g fill="#8C7B5E">
+        <circle cx="420" cy="220" r="48"/><rect x="368" y="274" width="104" height="250" rx="40"/>
+      </g>
+      <g fill="#FFFFFF" stroke="#C9B996" stroke-width="3">
+        <circle cx="540" cy="226" r="46"/><path d="M490 520 L510 280 Q540 266 570 280 L600 520 Z"/>
+      </g>
+      <text x="480" y="80" text-anchor="middle" font-family="Georgia" font-size="30" fill="#7A6A4E">Importez votre photo de mariage</text>
+      <text x="480" y="116" text-anchor="middle" font-family="Georgia" font-size="20" fill="#9A8A6E">sélectionnez cette image → panneau de droite → « Importer »</text>
+    </svg>`,
+  )
+
+function mariageTemplate() {
+  const s = slide({ background: '#1A1714' })
+  // photo : 1040×650 centrée sous le titre (ratio 16/10, cadrage « contenir »)
+  s.elements.push(
+    makeElement('text', {
+      x: 60, y: 14, w: 1160, h: 50,
+      text: 'Notre mariage — qui est sur la photo ?', fontSize: 34, color: '#F3E9D8',
+      fontFamily: 'Playfair Display', italic: true, align: 'center',
+    }),
+    makeElement('image', { x: 120, y: 66, w: 1040, h: 650, src: MARIAGE_PLACEHOLDER, fit: 'contain', locked: true }),
+    makeElement('tag', { x: 520, y: 249, w: 110, h: 110, name: 'Le marié', info: 'Remplacez par son prénom' }),
+    makeElement('tag', { x: 653, y: 259, w: 104, h: 104, name: 'La mariée', info: 'Remplacez par son prénom' }),
+  )
+  return {
+    id: uid('pres'),
+    title: 'Photo de mariage — qui est qui ?',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    slides: [s],
+  }
+}
+
 export const TEMPLATES = [
   { id: 'blank', name: 'Vierge', desc: 'Une diapositive toute neuve.', swatch: '#ffffff', build: blankTemplate },
   { id: 'lesson', name: 'Photo annotée', desc: 'Zones cliquables + popups, parfait pour l’enseignement.', swatch: '#8A9B77', build: lessonTemplate },
@@ -366,6 +420,7 @@ export const TEMPLATES = [
   { id: 'sommaire', name: 'Sommaire interactif', desc: 'Sommaire cliquable + 3 chapitres liés (navigation non linéaire prête à l’emploi).', swatch: '#1E1E3A', build: sommaireTemplate },
   { id: 'produit', name: 'Fiche produit', desc: 'Image annotée, caractéristiques, prix — exemple entreprise.', swatch: '#0E7C7B', build: productTemplate },
   { id: 'citation', name: 'Citation', desc: 'Grande typographie Playfair pour ponctuer une présentation.', swatch: '#FDF6E3', build: citationTemplate },
+  { id: 'mariage', name: 'Photo de mariage', desc: 'Identifiez chaque invité sur la photo, puis partagez-la : on survole un visage, son nom s’affiche.', swatch: '#C9A96E', build: mariageTemplate },
   { id: 'quiz', name: 'Quiz', desc: 'QCM interactif avec correction immédiate — idéalement joué en lecture.', swatch: '#4FC98A', build: quizTemplate },
 ]
 

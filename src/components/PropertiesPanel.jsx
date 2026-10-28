@@ -1,7 +1,9 @@
 import { useRef } from 'react'
+import { fileToImageSrc } from '../lib/images.js'
 
 const FONTS = ['Inter', 'Montserrat', 'Playfair Display', 'Lora', 'Caveat', 'Roboto Mono']
 const COLORS = ['#1c1c28', '#5b5b7a', '#6c6ce5', '#e5646c', '#4fc98a', '#f2b34c', '#FFFFFF', '#EFEEF6', 'transparent']
+const TAG_COLORS = ['#F2B34C', '#FFFFFF', '#E5646C', '#4FC98A', '#6C6CE5', '#5BC0EB', '#F28AC0']
 const FILLS = ['#6c6ce5', '#4fc98a', '#e5646c', '#f2b34c', '#14142B', '#EFEEF6', '#DFF3E9', '#FFEDD9', 'transparent']
 
 export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDuplicate, onLayer }) {
@@ -29,6 +31,13 @@ export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDu
     reader.onload = () => setter(reader.result)
     reader.readAsDataURL(file)
     e.target.value = ''
+  }
+
+  // photos : réduites localement (1920 px, JPEG) pour tenir dans le stockage et le partage
+  const uploadPhoto = (setter) => async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) setter(await fileToImageSrc(file))
   }
 
   return (
@@ -128,7 +137,7 @@ export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDu
           <h3>Image</h3>
           <div className="field">
             <label>Importer depuis l'ordinateur</label>
-            <input type="file" accept="image/*" onChange={uploadImage((src) => p({ src }))} />
+            <input type="file" accept="image/*" onChange={uploadPhoto((src) => p({ src }))} />
           </div>
           <div className="field">
             <label>…ou URL</label>
@@ -232,7 +241,32 @@ export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDu
         </div>
       )}
 
+      {/* Personne identifiée */}
+      {el.type === 'tag' && (
+        <div className="sect">
+          <h3>🏷️ Personne</h3>
+          <div className="field">
+            <label>Nom</label>
+            <input
+              key={el.id} type="text" autoFocus value={el.name || ''} placeholder="ex. Tante Monique"
+              onChange={(e) => p({ name: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label>Précision (facultatif)</label>
+            <input type="text" value={el.info || ''} placeholder="ex. sœur de la mariée"
+              onChange={(e) => p({ info: e.target.value })} />
+          </div>
+          <ColorField label="Couleur du cercle" value={el.color} onChange={(v) => p({ color: v })} swatches={TAG_COLORS} />
+          <p style={{ color: 'var(--text-dim)', fontSize: 12, lineHeight: 1.5 }}>
+            Ajustez le cercle au visage avec les poignées. En lecture, le nom s'affiche sous le
+            visage et la liste « Qui est sur la photo ? » permet de retrouver chacun.
+          </p>
+        </div>
+      )}
+
       {/* Interactivité : popup */}
+      {el.type !== 'tag' && <>
       <div className="sect">
         <h3>💬 Popup au survol / clic</h3>
         <label className="check">
@@ -258,7 +292,7 @@ export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDu
             </div>
             <div className="field">
               <label>Image (facultatif)</label>
-              <input type="file" accept="image/*" onChange={uploadImage((img) => setPopup({ image: img }))} />
+              <input type="file" accept="image/*" onChange={uploadPhoto((img) => setPopup({ image: img }))} />
             </div>
             <label className="check">
               <input type="checkbox" checked={!!el.popup.below} onChange={(e) => setPopup({ below: e.target.checked })} />
@@ -298,6 +332,7 @@ export function PropertiesPanel({ el, slideIndex, slides, update, onDelete, onDu
           </div>
         )}
       </div>
+      </>}
     </aside>
   )
 }
@@ -333,5 +368,5 @@ export function ColorField({ label, value, onChange, swatches }) {
   )
 }
 
-const ICON = { text: '🔤', shape: '◼️', image: '🖼️', embed: '📺', hotspot: '👆', quiz: '🧠', audio: '🔊' }
-const LABEL = { text: 'Texte', shape: 'Forme', image: 'Image', embed: 'Vidéo intégrée', hotspot: 'Zone interactive', quiz: 'Quiz', audio: 'Audio' }
+const ICON = { text: '🔤', shape: '◼️', image: '🖼️', embed: '📺', hotspot: '👆', quiz: '🧠', audio: '🔊', tag: '🏷️' }
+const LABEL = { text: 'Texte', shape: 'Forme', image: 'Image', embed: 'Vidéo intégrée', hotspot: 'Zone interactive', quiz: 'Quiz', audio: 'Audio', tag: 'Personne identifiée' }

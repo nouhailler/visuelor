@@ -49,9 +49,9 @@ fonctionne alors sans aucune connexion.
 
 | Zone | Fonctionnalités |
 |---|---|
-| Tableau de bord | Création depuis **6 modèles**, renommer, dupliquer, supprimer, **dossiers filtrants + déplacement** |
+| Tableau de bord | Création depuis **8 modèles**, renommer, dupliquer, supprimer, **dossiers filtrants + déplacement** |
 | Éditeur | Drag & drop, 8 poignées de redimensionnement, calques (avancer/reculer), verrouillage, multi-diapositives (ajout, duplication, réordonnancement, fond) |
-| Éléments | Texte (Google Fonts, gras/italique/alignement/couleur/fond), formes (rectangle arrondi, ellipse, triangle), images (import local ou URL, cover/contain), vidéos YouTube/Vimeo, **quiz QCM interactifs**, **audio** (fichier local ou URL), zones interactives invisibles |
+| Éléments | Texte (Google Fonts, gras/italique/alignement/couleur/fond), formes (rectangle arrondi, ellipse, triangle), images (import local ou URL, cover/contain), vidéos YouTube/Vimeo, **quiz QCM interactifs**, **audio** (fichier local ou URL), zones interactives invisibles, **personnes identifiées 🏷️** |
 | Interactivité | Popup au survol ou au clic sur **n'importe quel élément** (titre, texte, image), lien vers une diapositive ou un site externe |
 | Lecture | Plein écran, navigation ←/→/Espace/Échap, responsive, impression PDF via le navigateur |
 | Éditeur UX | Panneau contextuel, historique annuler/rétablir (Ctrl+Z/Ctrl+Y, 60 niveaux), raccourcis (Suppr, Ctrl+D, flèches), ouverture du texte par double-clic, sauvegarde automatique |
@@ -131,7 +131,28 @@ et `scripts/test-standalone.mjs` celui de l'export HTML chiffré.
 Le rangement vit dans `localStorage` (clé `visuelor.folders`), ajouté aux
 présentations via le champ `folder` — rien ne quitte l'appareil.
 
-## Bibliothèque de modèles (7)
+## Photo de mariage — qui est qui ? (identifier des personnes)
+
+1. Tableau de bord → modèle **Photo de mariage**.
+2. Cliquez sur la photo d'exemple → panneau de droite → **Importer** votre photo.
+   Elle est réduite localement (1920 px, JPEG) pour tenir dans le stockage et le partage.
+3. Rail de l'éditeur → **🏷️** : chaque clic sur un visage pose un cercle ; tapez le nom
+   (et une précision facultative, ex. « sœur de la mariée ») dans le panneau de droite.
+   Ajustez le cercle avec les poignées ; `Échap` ou **Terminé** quitte le mode.
+4. **🔗 Partager** (barre du haut) → mot de passe → **Télécharger le fichier HTML protégé**,
+   à envoyer par e-mail / messagerie ; communiquez le mot de passe à part.
+
+En lecture (app ou fichier partagé) : noms affichés sous les visages, panneau
+**👥 Qui est sur la photo ?** (de gauche à droite, survol/clic = mise en évidence),
+bouton **🏷️** pour masquer les noms (visibles alors au survol ou au toucher).
+Les étiquettes apparaissent aussi dans les exports PNG/PDF.
+
+> Le « lien d'ouverture directe » n'est utilisable par d'autres que si l'app est
+> hébergée en ligne (ex. GitHub Pages) ; depuis `localhost`, la boîte de partage le
+> signale et recommande le fichier HTML. Avec une photo, le lien pèse plusieurs
+> centaines de Ko : le fichier reste le moyen le plus fiable.
+
+## Bibliothèque de modèles (8)
 
 | Modèle | Contenu |
 |---|---|
@@ -141,6 +162,7 @@ présentations via le champ `folder` — rien ne quitte l'appareil.
 | **Sommaire interactif** | Sommaire cliquable + 3 chapitres, chaque diapo propose « ← Sommaire » — la navigation non linéaire prête à l'emploi |
 | **Fiche produit** | Image annotée, caractéristiques, prix, hotspot popup — cas d'usage entreprise |
 | **Citation** | Grande typo Playfair sur fond crème, pour ponctuer une présentation |
+| **Photo de mariage** | Photo + personnes identifiées (cercle + nom), liste « Qui est sur la photo ? » |
 | **Quiz** | QCM interactif de démonstration (correction immédiate, recommencer) |
 
 ## Durcissement (Phase 4)

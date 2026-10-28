@@ -184,6 +184,40 @@ function drawElement(ctx, el, img) {
     return
   }
 
+  // Personne identifiée : cercle + nom (sous le visage, ou au-dessus près du bas)
+  if (el.type === 'tag') {
+    const c = el.color || '#F2B34C'
+    const cx = el.x + el.w / 2
+    ctx.save()
+    ctx.beginPath()
+    ctx.ellipse(cx, el.y + el.h / 2, el.w / 2, el.h / 2, 0, 0, Math.PI * 2)
+    ctx.lineWidth = 7
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)'
+    ctx.stroke()
+    ctx.lineWidth = 3
+    ctx.strokeStyle = c
+    ctx.stroke()
+    const name = el.name || 'Qui est-ce ?'
+    ctx.font = "600 19px 'Inter', sans-serif"
+    const tw = ctx.measureText(name).width + 28
+    const th = 32
+    const above = el.y + el.h > STAGE_H - 70
+    const ly = above ? el.y - 8 - th : el.y + el.h + 8
+    ctx.beginPath()
+    ctx.roundRect(cx - tw / 2, ly, tw, th, 14)
+    ctx.fillStyle = 'rgba(20,18,16,0.86)'
+    ctx.fill()
+    ctx.lineWidth = 2
+    ctx.strokeStyle = c
+    ctx.stroke()
+    ctx.fillStyle = '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(name, cx, ly + th / 2 + 1)
+    ctx.restore()
+    return
+  }
+
   // Audio : carte avec titre (le son n'est pas imprimable)
   if (el.type === 'audio') {
     ctx.save()

@@ -30,7 +30,34 @@ const VIEWER = [
   '  else if(ev.key==="Escape"){window.close()} });}',
   'function render(i){idx=i;closePop();stage.innerHTML="";stage.style.background=slides[i].background||"#fff";',
   '  slides[i].elements.forEach(function(el){stage.appendChild(build(el))});',
-  '  document.getElementById("ct").textContent=(i+1)+" / "+slides.length;}',
+  '  document.getElementById("ct").textContent=(i+1)+" / "+slides.length;people();}',
+  '// ── Personnes identifiées (photo de mariage…) ───────────────────────────',
+  'var listOn=true;',
+  'function buildTag(w,el){w.className="tg";w.setAttribute("data-id",el.id);w.style.setProperty("--c",el.color||"#F2B34C");',
+  '  var r=document.createElement("div");r.className="tg-r";w.appendChild(r);',
+  '  var l=document.createElement("div");l.className="tg-l"+(el.y+el.h>650?" up":"");',
+  '  var n=document.createElement("span");n.textContent=el.name||"Qui est-ce ?";l.appendChild(n);',
+  '  if(el.info){var f=document.createElement("span");f.className="tg-i";f.textContent=el.info;l.appendChild(f)}',
+  '  w.appendChild(l);w.addEventListener("click",function(ev){ev.stopPropagation();w.classList.toggle("open")});}',
+  'function hl(id,on){var t=stage.querySelector("[data-id=\\""+id+"\\"]");if(t)t.classList.toggle("hl",on)}',
+  'function people(){',
+  '  var tags=slides[idx].elements.filter(function(e){return e.type==="tag"}).sort(function(a,b){return (a.x+a.w/2)-(b.x+b.w/2)});',
+  '  var box=document.getElementById("pp"),ol=document.getElementById("ppl");ol.innerHTML="";',
+  '  document.getElementById("ppn").textContent=tags.length;',
+  '  box.style.display=tags.length&&listOn?"flex":"none";',
+  '  document.getElementById("tb").style.display=document.getElementById("lb").style.display=tags.length?"":"none";',
+  '  tags.forEach(function(e,i){',
+  '    var li=document.createElement("li"),b=document.createElement("button");',
+  '    var d=document.createElement("span");d.className="dot";d.style.borderColor=e.color||"#F2B34C";d.textContent=i+1;b.appendChild(d);',
+  '    var tx=document.createElement("span"),nm=document.createElement("div");nm.className="nm";nm.textContent=e.name||"Inconnu(e)";tx.appendChild(nm);',
+  '    if(e.info){var inf=document.createElement("div");inf.className="inf";inf.textContent=e.info;tx.appendChild(inf)}',
+  '    b.appendChild(tx);li.appendChild(b);ol.appendChild(li);',
+  '    b.onmouseenter=function(){hl(e.id,true)};b.onmouseleave=function(){if(!b.classList.contains("on"))hl(e.id,false)};',
+  '    b.onclick=function(){var on=!b.classList.contains("on");Array.prototype.forEach.call(ol.querySelectorAll("button.on"),function(x){x.classList.remove("on")});',
+  '      Array.prototype.forEach.call(stage.querySelectorAll(".tg.hl"),function(x){x.classList.remove("hl")});if(on){b.classList.add("on");hl(e.id,true)}};',
+  '  });}',
+  'document.getElementById("tb").addEventListener("click",function(){var q=document.body.classList.toggle("quiet");this.style.opacity=q?".55":"1"});',
+  'document.getElementById("lb").addEventListener("click",function(){listOn=!listOn;people()});',
   'function closePop(){if(popupEl){popupEl.remove();popupEl=null}}',
   'function build(el){'
   ,'  var w=document.createElement("div");w.style.cssText="position:absolute;left:"+el.x+"px;top:"+el.y+"px;width:"+el.w+"px;height:"+el.h+"px;";'
@@ -44,6 +71,7 @@ const VIEWER = [
   ,'  else if(el.type==="image"&&el.src){var img=new Image();img.src=el.src;img.style.cssText="width:100%;height:100%;object-fit:"+(el.fit||"cover")+";";w.appendChild(img);}'
   ,'  else if(el.type==="embed"&&el.url&&/youtube|vimeo/.test(el.url)){var f=document.createElement("iframe");f.src=embed(el.url);f.style.cssText="width:100%;height:100%;border:0;border-radius:8px";f.allow="autoplay;encrypted-media;fullscreen";f.allowFullscreen=true;w.appendChild(f);}'
   ,'  else if(el.type==="quiz"){buildQuiz(w,el);}'
+  ,'  else if(el.type==="tag"){buildTag(w,el);}'
   ,'  else if(el.type==="audio"){w.style.cssText+="display:flex;flex-direction:column;gap:6px;justify-content:center;background:rgba(127,127,160,0.10);border:1px solid rgba(127,127,160,0.35);border-radius:12px;padding:8px 12px;box-sizing:border-box;overflow:hidden;";'
   ,'    var tl=document.createElement("div");tl.style.cssText="font-size:13px;color:#8a8aa8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";tl.textContent="\\ud83d\\udd08 "+(el.title||"Piste audio");w.appendChild(tl);'
   ,'    var au=document.createElement("audio");au.controls=true;au.src=el.src||"";au.style.cssText="width:100%;height:34px";w.appendChild(au);}'
@@ -117,8 +145,21 @@ export function buildStandaloneHtml(payload) {
     '#msg{font-size:13px;margin-top:10px;min-height:17px}',
     '#bar{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);gap:10px;align-items:center;background:rgba(20,20,30,.72);border-radius:999px;padding:8px 14px;z-index:60}',
     '#bar button{width:auto;margin:0;padding:4px 12px;font-size:14px;background:rgba(255,255,255,.12)}',
-    '#ct{color:#cfcfe6;font-size:13px}',
+    '#ct{color:#cfcfe6;font-size:13px;white-space:nowrap}#bar button{white-space:nowrap}',
     '#wrap{display:grid;place-items:center;height:100%;overflow:hidden}',
+    '.tg{cursor:pointer}.tg-r{position:absolute;inset:0;border-radius:50%;border:3px solid var(--c);box-shadow:0 0 0 2px rgba(0,0,0,.35),inset 0 0 0 2px rgba(0,0,0,.25);transition:opacity .15s,box-shadow .15s}',
+    '.tg-l{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(20,18,16,.86);color:#fff;border:2px solid var(--c);border-radius:14px;padding:5px 14px;white-space:nowrap;z-index:5;font:600 19px/1.2 system-ui,sans-serif;pointer-events:none;transition:opacity .15s}',
+    '.tg-l.up{top:auto;bottom:calc(100% + 8px)}.tg-i{display:none;font-size:14px;font-weight:400;color:#e6dccb}',
+    '.tg:hover .tg-i,.tg.open .tg-i,.tg.hl .tg-i{display:block}.tg:hover,.tg.open,.tg.hl{z-index:20}',
+    '.tg.hl .tg-r{box-shadow:0 0 0 3px #fff,0 0 26px 6px var(--c)}',
+    '.quiet .tg:not(:hover):not(.open):not(.hl) .tg-r,.quiet .tg:not(:hover):not(.open):not(.hl) .tg-l{opacity:0}',
+    '#pp{display:none;position:fixed;top:16px;right:16px;z-index:70;width:250px;max-height:calc(100vh - 110px);flex-direction:column;background:rgba(20,20,30,.82);border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden}',
+    '#pp h3{font-size:13px;margin:0;padding:12px 14px 8px;color:#e6dccb}#pp ol{list-style:none;margin:0;padding:0 6px 8px;overflow-y:auto}',
+    '#pp li button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;margin:0;padding:7px 8px;border-radius:9px;background:none;font-weight:400;font-size:13px}',
+    '#pp li button:hover,#pp li button.on{background:rgba(255,255,255,.12)}',
+    '#pp .dot{flex:0 0 auto;width:20px;height:20px;border-radius:50%;border:2px solid;display:grid;place-items:center;font-size:10.5px;font-weight:700;box-sizing:border-box}',
+    '#pp .nm{font-weight:600;font-size:13.5px}#pp .inf{font-size:12px;color:#b9b9cc;margin-top:1px}#pp .hint{font-size:11.5px;color:#8d8da6;padding:0 14px 12px}',
+    '@media (max-width:700px){#pp{top:auto;bottom:74px;left:12px;right:12px;width:auto;max-height:38vh}}',
     '</style></head><body>',
     '<div id="lock"><div class="card">',
     '<div class="lockico">🔒</div><h1>Présentation protégée</h1>',
@@ -127,7 +168,8 @@ export function buildStandaloneHtml(payload) {
     '<button id="go">Ouvrir</button><div id="msg"></div>',
     '</div></div>',
     '<div id="wrap"><div id="sh" style="position:relative"><div id="st" style="position:relative;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)"></div></div></div>',
-    '<div id="bar"><button id="pv">←</button><span id="ct"></span><button id="nx">→</button><button onclick="window.close()" title="Refermer">✕</button></div>',
+    '<aside id="pp"><h3>👥 Qui est sur la photo ? (<span id="ppn"></span>)</h3><ol id="ppl"></ol><div class="hint">De gauche à droite · survolez un nom pour voir la personne</div></aside>',
+    '<div id="bar"><button id="pv">←</button><span id="ct"></span><button id="nx">→</button><button id="tb" title="Afficher / masquer les noms sur la photo">🏷️ Noms</button><button id="lb">👥 Liste</button><button onclick="window.close()" title="Refermer">✕</button></div>',
     '<script>', viewer, '</' + 'script></body></html>',
   ].join('\n')
 }

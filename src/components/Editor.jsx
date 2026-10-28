@@ -5,6 +5,8 @@ import { Stage } from './Stage.jsx'
 import { ElementView } from './ElementView.jsx'
 import { PropertiesPanel, ColorField } from './PropertiesPanel.jsx'
 import { ExportDialog } from './ExportDialog.jsx'
+import { ShareDialog } from './ShareDialog.jsx'
+import { fileToImageSrc } from '../lib/images.js'
 
 const BG_COLORS = ['#ffffff', '#f6f6fa', '#14142B', '#F2F7F0', '#FFF7EC', '#EFEEFF']
 
@@ -15,6 +17,8 @@ export function Editor({ presentationId, onBack, onPresent }) {
   const [saveState, setSaveState] = useState('saved')
   const [histVer, bumpHist] = useState(0)
   const [exportOpen, setExportOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [placeTag, setPlaceTag] = useState(false)
   const past = useRef([])
   const future = useRef([])
   const presRef = useRef(pres)
@@ -79,6 +83,17 @@ export function Editor({ presentationId, onBack, onPresent }) {
     const el = makeElement(type, extras)
     setSelectedId(el.id)
     setSlideElements(slide.id, (els) => [...els, el])
+  }
+
+  // Pose d'une étiquette « personne » centrée sur le point cliqué. La taille
+  // reprend celle de la dernière étiquette de la diapo (visages d'une même photo).
+  const placeTagAt = ({ x, y }) => {
+    const last = [...slide.elements].reverse().find((e) => e.type === 'tag')
+    const size = last ? last.w : 90
+    addElement('tag', {
+      x: Math.round(x - size / 2), y: Math.round(y - size / 2), w: size, h: size,
+      color: last?.color || '#F2B34C',
+    })
   }
 
   const deleteSelected = () => {
@@ -176,7 +191,7 @@ export function Editor({ presentationId, onBack, onPresent }) {
       else if (mod && e.key.toLowerCase() === 'y') { redo(); e.preventDefault() }
       else if (mod && e.key.toLowerCase() === 'd') { duplicateSelected(); e.preventDefault() }
       else if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault() }
-      else if (e.key === 'Escape') setSelectedId(null)
+      else if (e.key === 'Escape') { setSelectedId(null); setPlaceTag(false) }
       else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key) && selectedEl) {
         e.preventDefault()
         const d = e.shiftKey ? 10 : 1
@@ -221,6 +236,7 @@ export function Editor({ presentationId, onBack, onPresent }) {
         <button className="btn ghost" onClick={undo} disabled={!past.current.length} title="Annuler (Ctrl+Z)">↺</button>
         <button className="btn ghost" onClick={redo} disabled={!future.current.length} title="Rétablir (Ctrl+Y)">↻</button>
         <button className="btn ghost" onClick={() => setExportOpen(true)} title="Exporter (PNG, PDF)">⬇</button>
+        <button className="btn" onClick={() => setShareOpen(true)} title="Partager (lien ou fichier chiffré)">🔗 Partager</button>
         <button className="btn primary" onClick={() => onPresent(pres.id)}>▶ Lecture</button>
       </header>
 
@@ -234,21 +250,30 @@ export function Editor({ presentationId, onBack, onPresent }) {
           <button onClick={() => addElement('hotspot', { x: 570, y: 330, w: 140, h: 60 })} title="Zone interactive (popup / lien)" aria-label="Ajouter une zone interactive">👆</button>
           <button onClick={() => addElement('quiz', { x: 380, y: 190, w: 520, h: 360 })} title="Quiz interactif (QCM)" aria-label="Ajouter un quiz">🧠</button>
           <button onClick={() => addElement('audio', { x: 420, y: 580, w: 440, h: 76 })} title="Audio (fichier local ou URL)" aria-label="Ajouter un audio">🔊</button>
+          <button
+            className={placeTag ? 'active' : ''} aria-pressed={placeTag}
+            onClick={() => setPlaceTag((v) => !v)}
+            title="Identifier des personnes : cliquez sur chaque visage de la photo" aria-label="Identifier des personnes sur la photo"
+          >🏷️</button>
           <input
             ref={imageInput} type="file" accept="image/*" hidden
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0]
-              if (!file) return
-              const r = new FileReader()
-              r.onload = () => addElement('image', { src: r.result, w: 520, h: 350, x: 380, y: 190 })
-              r.readAsDataURL(file)
               e.target.value = ''
+              if (!file) return
+              addElement('image', { src: await fileToImageSrc(file), w: 520, h: 350, x: 380, y: 190 })
             }}
           />
         </nav>
 
         {/* Scène */}
         <div className="canvas-wrap">
+          {placeTag && (
+            <div className="place-hint" role="status">
+              🏷️ Cliquez sur le visage de chaque personne, puis saisissez son nom à droite.
+              <button className="btn small" onClick={() => setPlaceTag(false)}>Terminé</button>
+            </div>
+          )}
           <div className="stage-outer">
             <Stage
               slide={slide}
@@ -257,6 +282,8 @@ export function Editor({ presentationId, onBack, onPresent }) {
               onSelect={setSelectedId}
               onUpdate={updateEl}
               onGestureStart={pushHistory}
+              placeTag={placeTag}
+              onPlaceTag={placeTagAt}
             />
           </div>
           {/* Barre des diapositives */}
@@ -291,6 +318,8 @@ export function Editor({ presentationId, onBack, onPresent }) {
           onLayer={changeLayer}
         />
       </div>
+
+      {shareOpen && <ShareDialog presentation={pres} onClose={() => setShareOpen(false)} />}
 
       {exportOpen && (
         <ExportDialog
