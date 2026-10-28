@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { matchesEmbed, embedSrc } from './embeds.jsx'
 
 // Rendu d'un élément + interactivité (popup, lien), partagé entre :
 //  - l'éditeur (interactive=false : badges d'aide, pas de déclenchement),
 //  - le mode lecture (interactive=true : popups actives, liens actifs).
+// Mémoïsé : pendant un drag, seul l'élément déplacé est re-rendu.
 
-export function ElementView({ el, interactive, editingText, onTextCommit, onNavigate, showBadges = false }) {
+export const ElementView = memo(function ElementView({ el, interactive, editingText, onTextCommit, onNavigate, showBadges = false }) {
   const [popupOpen, setPopupOpen] = useState(false)
 
   useEffect(() => {
@@ -100,7 +101,7 @@ export function ElementView({ el, interactive, editingText, onTextCommit, onNavi
       inner = interactive && el.src ? (
         <div className="inner" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center', background: 'rgba(127,127,160,0.10)', border: '1px solid rgba(127,127,160,0.35)', borderRadius: 12, padding: '8px 12px', boxSizing: 'border-box', overflow: 'hidden' }}>
           <div style={{ fontSize: 13, color: '#8a8aa8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>🔊 {el.title || 'Piste audio'}</div>
-          <audio controls src={el.src} style={{ width: '100%', height: 34 }} />
+          <audio controls src={el.src} style={{ width: '100%', height: 34 }} title={el.title || 'Lecture audio'} aria-label={el.title || 'Lecture audio'} />
         </div>
       ) : (
         <div className="ph">🔊 {el.title || 'Piste audio — importez un fichier dans le panneau de droite'}</div>
@@ -132,7 +133,7 @@ export function ElementView({ el, interactive, editingText, onTextCommit, onNavi
       {hasPopup && popupOpen && <PopupBubble el={el} onClose={() => setPopupOpen(false)} />}
     </div>
   )
-}
+})
 
 function Badges({ el }) {
   const has = []
@@ -182,7 +183,11 @@ function QuizView({ el, interactive }) {
           if (answered && isCorrect) { style.borderColor = '#4fc98a'; style.background = 'rgba(79,201,138,0.18)' }
           if (answered && chosen && !isCorrect) { style.borderColor = '#e5646c'; style.background = 'rgba(229,100,108,0.15)' }
           return (
-            <button key={i} style={style} onClick={(e) => answer(i, e)} title={interactive && !answered ? 'Choisir cette réponse' : undefined}>
+            <button
+              key={i} style={style} onClick={(e) => answer(i, e)}
+              aria-label={`Réponse ${i + 1} : ${c}`}
+              title={interactive && !answered ? 'Choisir cette réponse' : undefined}
+            >
               {answered && (isCorrect ? '✓ ' : chosen ? '✗ ' : '')}{c}
             </button>
           )
@@ -196,6 +201,7 @@ function QuizView({ el, interactive }) {
             </span>
             <button
               style={{ width: 'auto', margin: 0, padding: '3px 10px', fontSize: 12.5, background: 'rgba(127,127,160,0.18)', borderRadius: 8, cursor: 'pointer' }}
+              aria-label="Recommencer le quiz"
               onClick={(e) => { e.stopPropagation(); setPicked(null) }}
             >
               ↺ Recommencer
@@ -209,7 +215,14 @@ function QuizView({ el, interactive }) {
 
 export function PopupBubble({ el, onClose }) {
   return (
-    <div className="popup" style={{ left: 'calc(50% - 150px)', [el.popup.below ? 'top' : 'bottom']: 'calc(100% + 10px)' }}>
+    <div
+      className="popup"
+      style={{
+        left: 'calc(50% - 150px)',
+        top: el.popup.below ? 'calc(100% + 10px)' : 'auto',
+        bottom: el.popup.below ? 'auto' : 'calc(100% + 10px)',
+      }}
+    >
       {el.popup.image ? <img className="pop-img" src={el.popup.image} alt="" /> : null}
       <div className="pop-body">
         {el.popup.title && <div className="pop-title">{el.popup.title}</div>}

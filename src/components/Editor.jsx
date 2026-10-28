@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { STAGE_W, STAGE_H, uid, loadOne, saveOne } from '../lib/store.js'
 import { makeElement, blankSlide } from '../lib/templates.js'
 import { Stage } from './Stage.jsx'
@@ -170,6 +170,7 @@ export function Editor({ presentationId, onBack, onPresent }) {
     const onKey = (e) => {
       const t = e.target
       if (t && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName))) return
+      if (document.querySelector('.modal-back')) return // une boîte de dialogue est ouverte
       const mod = e.ctrlKey || e.metaKey
       if (mod && e.key.toLowerCase() === 'z') { e.shiftKey ? redo() : undo(); e.preventDefault() }
       else if (mod && e.key.toLowerCase() === 'y') { redo(); e.preventDefault() }
@@ -225,14 +226,14 @@ export function Editor({ presentationId, onBack, onPresent }) {
 
       <div className="editor-body">
         {/* Rail latéral : ajout d'éléments */}
-        <nav className="rail">
-          <button onClick={() => addElement('text', { text: 'Votre texte', x: 420, y: 300, w: 440, h: 90 })} title="Texte">🔤</button>
-          <button onClick={() => addElement('shape', { shape: 'rect', x: 520, y: 280, w: 240, h: 160 })} title="Forme">◼️</button>
-          <button onClick={() => imageInput.current?.click()} title="Image">🖼️</button>
-          <button onClick={() => addElement('embed', { x: 320, y: 180, w: 640, h: 360 })} title="Vidéo (YouTube, Vimeo)">📺</button>
-          <button onClick={() => addElement('hotspot', { x: 570, y: 330, w: 140, h: 60 })} title="Zone interactive (popup / lien)">👆</button>
-          <button onClick={() => addElement('quiz', { x: 380, y: 190, w: 520, h: 360 })} title="Quiz interactif (QCM)">🧠</button>
-          <button onClick={() => addElement('audio', { x: 420, y: 580, w: 440, h: 76 })} title="Audio (fichier local ou URL)">🔊</button>
+        <nav className="rail" aria-label="Ajouter un élément">
+          <button onClick={() => addElement('text', { text: 'Votre texte', x: 420, y: 300, w: 440, h: 90 })} title="Texte" aria-label="Ajouter un texte">🔤</button>
+          <button onClick={() => addElement('shape', { shape: 'rect', x: 520, y: 280, w: 240, h: 160 })} title="Forme" aria-label="Ajouter une forme">◼️</button>
+          <button onClick={() => imageInput.current?.click()} title="Image" aria-label="Ajouter une image">🖼️</button>
+          <button onClick={() => addElement('embed', { x: 320, y: 180, w: 640, h: 360 })} title="Vidéo (YouTube, Vimeo)" aria-label="Ajouter une vidéo intégrée">📺</button>
+          <button onClick={() => addElement('hotspot', { x: 570, y: 330, w: 140, h: 60 })} title="Zone interactive (popup / lien)" aria-label="Ajouter une zone interactive">👆</button>
+          <button onClick={() => addElement('quiz', { x: 380, y: 190, w: 520, h: 360 })} title="Quiz interactif (QCM)" aria-label="Ajouter un quiz">🧠</button>
+          <button onClick={() => addElement('audio', { x: 420, y: 580, w: 440, h: 76 })} title="Audio (fichier local ou URL)" aria-label="Ajouter un audio">🔊</button>
           <input
             ref={imageInput} type="file" accept="image/*" hidden
             onChange={(e) => {
@@ -302,8 +303,9 @@ export function Editor({ presentationId, onBack, onPresent }) {
   )
 }
 
-// Miniature non interactive d'une diapositive
-function MiniStage({ slide }) {
+// Miniature non interactive d'une diapositive (mémoïsée : ne re-rend que si
+// SA diapositive change — les autres vignettes restent figées pendant un drag).
+const MiniStage = memo(function MiniStage({ slide }) {
   const k = 128 / STAGE_W
   return (
     <div className="stage" style={{ width: STAGE_W, height: STAGE_H, transform: `scale(${k})`, transformOrigin: '0 0', background: slide.background, pointerEvents: 'none' }}>
@@ -314,4 +316,4 @@ function MiniStage({ slide }) {
       ))}
     </div>
   )
-}
+})

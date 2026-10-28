@@ -42,9 +42,12 @@ export function PresentMode({ presentationId, presentation, shared = false, onEx
       if (document.fullscreenElement) { document.exitFullscreen?.().catch(() => {}) }
     }
     const el = document.documentElement
+    // le plein écran exige un geste utilisateur : on l'essaie seulement si l'entrée
+    // en lecture est « activée » (clic réel) — sinon on reste dans l'onglet, très bien aussi.
+    if (document.userActivation && !document.userActivation.isActive) return
     el.requestFullscreen?.()
       .then(() => document.addEventListener('fullscreenchange', onFs))
-      .catch(() => {}) // refusé : on reste dans l'onglet, très bien aussi
+      .catch(() => {})
     return () => { document.removeEventListener('fullscreenchange', onFs) }
   }, [])
 
@@ -73,11 +76,11 @@ export function PresentMode({ presentationId, presentation, shared = false, onEx
               🔒 partagée
             </span>
           )}
-          <button className="btn small" onClick={() => go(-1)} disabled={idx === 0} title="Précédent (←)">←</button>
-          <span className="counter">{idx + 1} / {pres.slides.length}</span>
-          <button className="btn small" onClick={() => go(1)} disabled={idx === pres.slides.length - 1} title="Suivant (→)">→</button>
+          <button className="btn small" onClick={() => go(-1)} disabled={idx === 0} title="Précédent (←)" aria-label="Diapositive précédente">←</button>
+          <span className="counter" aria-live="polite">{idx + 1} / {pres.slides.length}</span>
+          <button className="btn small" onClick={() => go(1)} disabled={idx === pres.slides.length - 1} title="Suivant (→)" aria-label="Diapositive suivante">→</button>
           <span style={{ width: 1, height: 22, background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
-          <button className="btn small" onClick={() => window.print()} title="Imprimer / PDF">🖨</button>
+          <button className="btn small" onClick={() => window.print()} title="Imprimer / PDF" aria-label="Imprimer ou exporter en PDF">🖨</button>
           {shared && (
             <button
               className="btn small"

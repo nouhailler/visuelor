@@ -99,10 +99,10 @@ export function Stage({ slide, mode, selectedId, onSelect, onUpdate, onGestureSt
     }
   }
 
-  const commitText = (el, text) => {
+  const commitText = useCallback((el, text) => {
     onUpdate(el.id, { text })
     setEditingId(null)
-  }
+  }, [onUpdate])
 
   useEffect(() => { editingRef.current = editingId }, [editingId])
 

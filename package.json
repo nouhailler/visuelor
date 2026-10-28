@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node scripts/test-core.mjs && node scripts/test-standalone.mjs && node scripts/test-pdf.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

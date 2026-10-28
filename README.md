@@ -14,6 +14,7 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # build de production dans dist/
 npm run preview  # sert la build (nécessaire pour le service worker PWA)
+npm test         # batterie de tests cœur + export chiffré + structure PDF
 node scripts/gen-icons.js            # régénère les icônes PWA
 node scripts/test-standalone.mjs     # vérifie l'export HTML chiffré
 node scripts/test-pdf.mjs            # vérifie la structure PDF
@@ -142,7 +143,27 @@ présentations via le champ `folder` — rien ne quitte l'appareil.
 | **Citation** | Grande typo Playfair sur fond crème, pour ponctuer une présentation |
 | **Quiz** | QCM interactif de démonstration (correction immédiate, recommencer) |
 
+## Durcissement (Phase 4)
+
+- **`npm test`** : batterie automatisée sans navigateur —
+  - `scripts/test-core.mjs` : persistance (aller-retour, duplication profonde,
+    stockage saturé, JSON corrompu), dossiers (renommage propagé, suppression),
+    chiffrement (aller-retour, mauvais mot de passe, payload corrompu, extraction
+    de lien/code, générateur de mot de passe), modèles (7 construits, éléments
+    dans la scène 1280×720, liens non cassés, IDs uniques, quiz cohérents).
+  - `scripts/test-standalone.mjs` : syntaxe du lecteur embarqué + absence de
+    contenu en clair dans l'export chiffré.
+  - `scripts/test-pdf.mjs` : structure du PDF (objets, offsets xref, EOF).
+- **Performance** : `ElementView` et les vignettes du bandeau sont mémoïsés —
+  pendant un déplacement, seul l'élément bougé (et sa vignette) est re-rendu.
+- **Robustesse** : les raccourcis clavier de l'éditeur sont désactivés tant
+  qu'une boîte de dialogue est ouverte ; le plein écran n'est demandé qu'après
+  un vrai geste utilisateur ; les warnings React de style sont corrigés.
+- **Accessibilité** : focus visible au clavier (`:focus-visible`), respect de
+  `prefers-reduced-motion`, libellés ARIA sur le rail, la navigation de lecture,
+  les boutons de quiz, le lecteur audio ; compteur de diapositives annoncé
+  (`aria-live`).
+
 ## Prochaines étapes
 
-- Durcissement (tests E2E automatisés, accessibilité, perfs des scènes riches)
 - Collaboration temps réel hors ligne (piste : CRDT type Yjs + share local)
