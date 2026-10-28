@@ -92,6 +92,19 @@ et tailles des éléments sont donc identiques sur tous les écrans.
 - `↑↓←→` (+Maj : ×10) : nudge · `Échap` : désélectionner
 - Double-clic sur un texte : édition in situ
 
+## Export PNG + PDF (100 % local)
+
+Bouton **⬇** dans l'éditeur :
+- **PNG** (2560×1440, échelle ×2) : diapositive courante ou toutes les diapos
+- **PDF** : assemblage natif — les diapos sont rasterisées en JPEG (qualité 92) puis
+  écrites dans un PDF 1.4 valide par un générateur écrit sur mesure, **sans aucune
+  dépendance** ; les vidéos intégrées apparaissent comme espaces réservés.
+- Rasterisation fidèle : polices chargées, `object-fit` cover/contain répliqué,
+  opacité, bordures, textWrap manuel aligné left/center/right.
+
+Tests : `scripts/test-pdf.mjs` valide la structure du PDF (xref, objets, offsets),
+et `scripts/test-standalone.mjs` celui de l'export HTML chiffré.
+
 ## Prochaines étapes
 
 - Rôles et dossiers (tableau de bord), bibliothèque de modèles enrichie

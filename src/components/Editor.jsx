@@ -4,6 +4,7 @@ import { makeElement, blankSlide } from '../lib/templates.js'
 import { Stage } from './Stage.jsx'
 import { ElementView } from './ElementView.jsx'
 import { PropertiesPanel, ColorField } from './PropertiesPanel.jsx'
+import { ExportDialog } from './ExportDialog.jsx'
 
 const BG_COLORS = ['#ffffff', '#f6f6fa', '#14142B', '#F2F7F0', '#FFF7EC', '#EFEEFF']
 
@@ -13,6 +14,7 @@ export function Editor({ presentationId, onBack, onPresent }) {
   const [selectedId, setSelectedId] = useState(null)
   const [saveState, setSaveState] = useState('saved')
   const [histVer, bumpHist] = useState(0)
+  const [exportOpen, setExportOpen] = useState(false)
   const past = useRef([])
   const future = useRef([])
   const presRef = useRef(pres)
@@ -217,6 +219,7 @@ export function Editor({ presentationId, onBack, onPresent }) {
         <div className="spacer" />
         <button className="btn ghost" onClick={undo} disabled={!past.current.length} title="Annuler (Ctrl+Z)">↺</button>
         <button className="btn ghost" onClick={redo} disabled={!future.current.length} title="Rétablir (Ctrl+Y)">↻</button>
+        <button className="btn ghost" onClick={() => setExportOpen(true)} title="Exporter (PNG, PDF)">⬇</button>
         <button className="btn primary" onClick={() => onPresent(pres.id)}>▶ Lecture</button>
       </header>
 
@@ -285,6 +288,14 @@ export function Editor({ presentationId, onBack, onPresent }) {
           onLayer={changeLayer}
         />
       </div>
+
+      {exportOpen && (
+        <ExportDialog
+          presentation={pres}
+          slideIndex={slideIdx}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
     </div>
   )
 }
